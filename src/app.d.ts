@@ -4,7 +4,10 @@ declare global {
 	namespace App {
 		// interface Error {}
 		// interface Locals {}
-		// interface PageData {}
+		interface PageData {
+			cars?: Car[];
+			car?: Car;
+		}
 		// interface PageState {}
 		// interface Platform {}
 	}
