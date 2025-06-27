@@ -79,7 +79,7 @@
 		await loadModels(brandId);
 	}
 
-	// Load brands on component mount
+	// Load brand on component mount
 	$effect(() => {
 		if (filterState.brands.length === 0 && !filterState.brandLoading && !filterState.brandError) {
 			loadBrands();

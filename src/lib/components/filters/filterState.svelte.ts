@@ -1,5 +1,6 @@
 import type { Brand, FilterParams, Model } from './types';
-import { getBrandsList, getModelsById } from './filterApi';
+import { getBrandsList } from '$lib/api/brand/getBrandsList';
+import { getModelsById } from '$lib/api/model/getModelsById';
 
 interface FilterState {
 	// Brand state

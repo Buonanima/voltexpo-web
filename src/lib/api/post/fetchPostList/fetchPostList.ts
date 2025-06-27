@@ -1,7 +1,7 @@
 import type { Post } from '$lib/types/post';
 import config from '$lib/config/env';
 import { error } from '@sveltejs/kit';
-import type { FetchPostListOptions, PostsRequestBody } from '$lib/server/posts/fetchPostList/types';
+import type { FetchPostListOptions, PostsRequestBody } from '$lib/api/post/fetchPostList/types';
 
 export async function fetchPostList(options: FetchPostListOptions = {}): Promise<Post[]> {
 	try {

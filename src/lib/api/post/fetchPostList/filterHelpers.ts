@@ -1,4 +1,4 @@
-import type { IDValue, RangeFilter } from '$lib/server/posts/fetchPostList/types';
+import type { IDValue, RangeFilter } from '$lib/server/post/fetchPostList/types';
 
 export const FilterHelpers = {
 	// Brand filter helper
