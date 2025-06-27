@@ -1,0 +1,168 @@
+<!-- components/ModelCard.svelte -->
+<script lang="ts">
+	import type { Model } from '../types';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher<{
+		select: Model;
+		close: void;
+		search: string;
+		load: number;
+		retry: number;
+	}>();
+
+	// Props - completely controlled from outside
+	export let isOpen: boolean = false;
+	export let models: Model[] = [];
+	export let searchText: string = '';
+	export let loading: boolean = false;
+	export let error: boolean = false;
+	export let filteredModels: Model[] = [];
+	export let brandId: number | null = null;
+
+	function closeModelCard(): void {
+		dispatch('close');
+	}
+
+	function selectModel(model: Model): void {
+		dispatch('select', model);
+	}
+
+	function handleSearchInput(event: Event): void {
+		const target = event.target as HTMLInputElement;
+		dispatch('search', target.value);
+	}
+
+	function handleBackdropClick(event: MouseEvent | TouchEvent): void {
+		if (event.target === event.currentTarget) {
+			closeModelCard();
+		}
+	}
+
+	function handleRetry(): void {
+		if (brandId) {
+			dispatch('retry', brandId);
+		}
+	}
+
+	// Dispatch load event when component becomes visible and brandId is available
+	$: if (isOpen && brandId && models.length === 0 && !loading && !error) {
+		dispatch('load', brandId);
+	}
+</script>
+
+{#if isOpen}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div
+		id="model_card_container"
+		class="fixed top-0 left-0 z-10 h-full w-full flex justify-center items-center
+               bg-gray-500/20 dark:bg-gray-700/30"
+		on:click={handleBackdropClick}
+		on:mousedown={handleBackdropClick}
+		on:touchstart={handleBackdropClick}
+	>
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<div
+			id="model_card"
+			class="w-[500px] max-[550px]:w-full max-[750px]:mx-[20px]
+                   pt-[15px] rounded-[15px] overflow-hidden
+                   shadow-[0_5px_30px_rgb(0,0,0,0.15)]
+                   backdrop-blur-[20px]
+                   bg-white/70 dark:bg-zinc-950/70"
+			on:click|stopPropagation
+			on:mousedown|stopPropagation
+			on:touchstart|stopPropagation
+		>
+			<label
+				for="model_card_input"
+				class="block w-full pl-[30px] pb-[5px]
+                       font-medium text-[20px]
+                       text-zinc-600 dark:text-zinc-200"
+			>
+				Model
+			</label>
+
+			<input
+				id="model_card_input"
+				placeholder="Search..."
+				value={searchText}
+				on:input={handleSearchInput}
+				disabled={!brandId}
+				class="w-[calc(100%-30px)] mx-[15px] mb-[15px] px-[15px] h-[40px]
+                       ring-0 focus:ring-0 rounded-[10px]
+                       bg-white dark:bg-transparent
+                       font-medium text-gray-600 dark:text-white outline-none
+                       border-[1.5px] border-zinc-300 dark:border-zinc-500
+                       transition-all duration-200
+                       focus:border-brand-blue_light dark:focus:border-brand-blue_light
+                       placeholder-zinc-500 dark:placeholder-zinc-400 focus:placeholder-transparent
+                       hover:border-brand-blue_light dark:hover:border-brand-blue_light
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+			/>
+
+			<div class="h-[400px] mr-[15px] ml-[20px] mb-[20px]
+                        overscroll-contain overflow-y-scroll scrollbar-thin
+                        scrollbar-thumb-brand-blue_light/60 scrollbar-thumb-rounded-full
+                        scrollbar-track-transparent scrollbar-track-rounded-full">
+				<ul
+					id="model_card_list"
+					class="card_list mr-[10px] text-gray-600"
+				>
+					{#if !brandId}
+						<li class="p-4 text-center text-gray-500 dark:text-gray-400">
+							Please select a brand first
+						</li>
+					{:else if loading}
+						<li class="p-4 text-center text-gray-600 dark:text-gray-300">
+							Loading models...
+						</li>
+					{:else if error}
+						<li class="p-4 text-center">
+							<div class="text-red-500 mb-2">Error loading models</div>
+							<button
+								on:click={handleRetry}
+								class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600
+                                       transition-colors duration-150 focus:outline-none focus:ring-2
+                                       focus:ring-blue-300"
+							>
+								Retry
+							</button>
+						</li>
+					{:else if filteredModels.length === 0 && models.length > 0}
+						<li class="p-4 text-center text-gray-500 dark:text-gray-400">
+							No models match your search
+						</li>
+					{:else if filteredModels.length === 0}
+						<li class="p-4 text-center text-gray-500 dark:text-gray-400">
+							No models available for this brand
+						</li>
+					{:else}
+						{#each filteredModels as model (model.id)}
+							<li
+								class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded
+		       						 text-gray-700 dark:text-gray-200 transition-colors duration-150 focus:outline-none
+		       					   focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-600"
+								on:click={() => selectModel(model)}
+								data-id={model.id}
+								data-slug={model.slug}
+								role="option"
+								aria-selected="false"
+								tabindex="0"
+								on:keydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									selectModel(model);
+								}
+							}}
+							>
+								{model.model_name}
+							</li>
+						{/each}
+					{/if}
+				</ul>
+			</div>
+		</div>
+	</div>
+{/if}

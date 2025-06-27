@@ -1,41 +1,24 @@
 <script lang="ts">
-	import type { Car } from '$lib/types/car.js';
+	import type { Post } from '$lib/types/post.js';
 	import HeartButton from './HeartButton.svelte';
 	import { carsActions } from '$lib/stores/posts';
 
-	export let car: Car;
+	export let car: Post;
 
 	function handleHeartClick() {
 		carsActions.toggleLike(car.id);
 	}
 
-	function formatPrice(price: number): string {
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: 'EUR',
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 0,
-		}).format(price);
-	}
-
-	function getImageUrl(url: string): string {
-		return url || '/placeholder-car.jpg';
-	}
-
-	function formatKm(km: number): string {
-		return km.toLocaleString();
-	}
-
-	$: registrationDate = `${car.firstRegistrationYear}`;
 	$: range = car.configuration?.technical_specs?.range?.combined_warm;
 </script>
 
-<div class="w-full min-[751px]:h-[275px] flex max-[750px]:flex-col flex-row max-[750px]:border-0 rounded-[16px] max-[750px]:rounded-none bg-zinc-100 dark:bg-zinc-925 overflow-hidden">
+<div
+	class="w-full min-[751px]:h-[275px] flex max-[750px]:flex-col flex-row max-[750px]:border-0 rounded-[16px] max-[750px]:rounded-none bg-zinc-100 dark:bg-zinc-925 overflow-hidden">
 	<!-- Car Image -->
 	<div class="shrink-0 min-[751px]:w-[350px] min-[1000px]:w-[450px] min-[751px]:h-[275px] max-[750px]:aspect-[16/9]">
-		<a href="/car/{car.slug || car.id}" class="block w-full h-full">
+		<a href="/electric-car/{car.slug || car.id}" class="block w-full h-full">
 			<img
-				src={getImageUrl(car['main-picture-url'])}
+				src={car.main_picture_url}
 				alt={car.title}
 				class="bg-gray-300 rounded-[16px] max-[750px]:rounded-none w-full h-full object-cover clear_image"
 				loading="lazy"
@@ -45,11 +28,13 @@
 
 	<!-- Car Content -->
 	<div class="flex-1 min-w-0">
-		<div class="px-[20px] max-[750px]:px-[15px] py-[10px] h-full min-[751px]:flex min-[751px]:flex-col min-[750px]:justify-between">
+		<div
+			class="px-[20px] max-[750px]:px-[15px] py-[10px] h-full min-[751px]:flex min-[751px]:flex-col min-[750px]:justify-between">
 			<div class="max-[750px]:mb-[20px]">
 				<div class="w-full flex flex-row justify-between">
-					<a href="/car/{car.slug || car.id}" class="flex-1 min-w-0">
-						<div class="w-full flex items-center text-zinc-800 dark:text-gray-200 font-medium text-[18px] max-[750px]:text-[16px] pr-[15px] hover:underline">
+					<a href="/electric-car/{car.slug || car.id}" class="flex-1 min-w-0">
+						<div
+							class="w-full flex items-center text-zinc-800 dark:text-gray-200 font-medium text-[18px] max-[750px]:text-[16px] pr-[15px] hover:underline">
 							{car.title || 'no data'}
 						</div>
 					</a>
@@ -57,7 +42,7 @@
 					<div class="flex flex-row items-center gap-3">
 						<div class="flex flex-row flex-nowrap items-baseline gap-1.5 text-nowrap">
 							<span class="items-baseline text-brand-blue_light_2 dark:text-brand-blue_light_2 font-medium text-[21px]">
-								{formatPrice(car.price)}
+								{car.price}
 							</span>
 							<span class="text-gray-500 dark:text-gray-500 text-[19px] font-semibold">€</span>
 						</div>
@@ -65,15 +50,16 @@
 				</div>
 
 				<!-- Car Specs Row -->
-				<div class="w-full flex flex-row flex-wrap font-medium text-gray-600 dark:text-gray-400 text-[15px] gap-[5px] mb-[5px]">
+				<div
+					class="w-full flex flex-row flex-wrap font-medium text-gray-600 dark:text-gray-400 text-[15px] gap-[5px] mb-[5px]">
 					<div class="">
-						{registrationDate || 'no data'} •
+						{car.first_registration_year || 'no data'} •
 					</div>
 					<div class="">
-						{car.km ? formatKm(car.km) : 'no data'} Km •
+						{car.km} Km •
 					</div>
 					<div>
-						{car.hp || 'no data'} HP
+						{#if car.hp} {car.hp} HP{:else} no data HP{/if}
 					</div>
 				</div>
 

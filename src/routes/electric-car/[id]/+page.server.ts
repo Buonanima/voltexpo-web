@@ -1,9 +1,10 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { fetchCarById } from '$lib/server/posts';
+
+import { fetchPostById } from '$lib/server/posts/fetchPostById';
 
 export const load: PageServerLoad = async ({ params }) => {
-	const car = await fetchCarById(params.id);
+	const car = await fetchPostById(params.id);
 
 	if (!car) {
 		throw error(404, 'Car not found');

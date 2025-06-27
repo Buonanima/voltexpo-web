@@ -1,70 +1,190 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { invalidateAll } from '$app/navigation';
-  import { carsActions, likedCars } from '$lib/stores/posts';
-  import type { PageData } from './$types';
-  import PostCard from '$lib/components/PostCard.svelte';
+	import { browser } from '$app/environment';
+	import { carsActions, likedCars } from '$lib/stores/posts';
+	import type { PageData } from './$types';
+	import PostCard from '$lib/components/PostCard.svelte';
+	import Filter from '$lib/components/filters/FilterHome/Filter.svelte'; // Import the Filter component
 
-  export let data: PageData;
+	// Page-specific components
+	import CarsEmptyState from './components/CarsEmptyState.svelte';
+	import Navbar from '$lib/components/Navbar/Navbar.svelte';
+	import HomepageHeading from './components/HomepageHeading.svelte';
+	import FireIcon from '$lib/components/icons/FireIcon.svelte';
+	import ClockIcon from '$lib/components/icons/ClockIcon.svelte';
+	import type { Brand, Model } from '$lib/components/filters/types';
 
-  // Add isLiked property to cars based on client state
-  $: carsWithLikeState = data.cars.map(car => ({
-    ...car,
-    isLiked: browser ? carsActions.isLiked(car.id, $likedCars) : false
-  }));
+	// Navbar options
+	let currentNavbarTab = 'home';
+	let isAuthenticated = false;
+	let createNewPostUrl = '/create-post';
+	let logInUrl = '/login';
 
-  let isRefreshing = false;
+	export let data: PageData;
 
-  async function refreshCars() {
-    if (isRefreshing) return;
+	// Update these types to match what Filter component emits
+	let selectedBrand: Brand | null = null;
+	let selectedModel: Model | null = null;
 
-    isRefreshing = true;
-    try {
-      // Force a reload to get new random cars
-      await invalidateAll();
-    } finally {
-      isRefreshing = false;
-    }
-  }
+	// Reactive statements - always show all cars regardless of filters
+	$: popularCarsWithLikeState = enrichCarsWithLikeState(data.popularCars);
+	$: recentCarsWithLikeState = enrichCarsWithLikeState(data.recentCars);
+	$: allCarsWithLikeState = enrichCarsWithLikeState(data.allCars);
+
+	// Helper functions
+	function enrichCarsWithLikeState(cars: typeof data.popularCars) {
+		return cars.map(car => ({
+			...car,
+			isLiked: browser ? carsActions.isLiked(car.id, $likedCars) : false
+		}));
+	}
+
+	// Dummy action handlers - no filtering logic
+	function handleBrandSelect(event: CustomEvent<Brand>) {
+		selectedBrand = event.detail;
+		selectedModel = null;
+		console.log('Brand selected (dummy action):', event.detail);
+		// No car list update - just store the selection
+	}
+
+	function handleModelSelect(event: CustomEvent<Model>) {
+		selectedModel = event.detail;
+		console.log('Model selected (dummy action):', event.detail);
+		// No car list update - just store the selection
+	}
+
+	function handleBrandClear() {
+		selectedBrand = null;
+		selectedModel = null;
+		console.log('Brand cleared (dummy action)');
+		// No car list update - just clear the selection
+	}
+
+	function handleModelClear() {
+		selectedModel = null;
+		console.log('Model cleared (dummy action)');
+		// No car list update - just clear the selection
+	}
+
+	// Computed values - always show cars regardless of filters
+	$: hasPopularCars = popularCarsWithLikeState.length > 0;
+	$: hasRecentCars = recentCarsWithLikeState.length > 0;
+	$: hasAllCars = allCarsWithLikeState.length > 0;
 </script>
 
 <svelte:head>
-  <title>Electric Cars Feed</title>
-  <meta name="description" content="Browse our latest selection of electric vehicles" />
+	<title>Electric Cars Feed</title>
+	<meta name="description" content="Browse our latest selection of electric vehicles" />
 </svelte:head>
 
-<div class="max-w-[1200px] mx-auto px-4 py-8">
-  <header class="flex justify-between items-center mb-8 flex-wrap gap-4">
-    <h1 class="m-0 text-slate-800 dark:text-gray-200 text-3xl font-bold">Latest Electric Cars</h1>
-    <button
-      class="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white border-none px-6 py-3 rounded-md cursor-pointer font-medium transition-all duration-200 relative {isRefreshing ? 'pl-10' : ''}"
-      class:animate-pulse={isRefreshing}
-      on:click={refreshCars}
-      disabled={isRefreshing}
-    >
-      {#if isRefreshing}
-        <div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-      {/if}
-      {isRefreshing ? 'Loading...' : 'Get New Cars'}
-    </button>
-  </header>
+<Navbar
+	{currentNavbarTab}
+	{isAuthenticated}
+	{createNewPostUrl}
+	{logInUrl}
+/>
 
-  {#if carsWithLikeState.length > 0}
-    <div class="w-full flex flex-col gap-[25px] max-[750px]:gap-[40px]">
-      {#each carsWithLikeState as car (car.id)}
-        <PostCard {car} />
-      {/each}
-    </div>
-  {:else}
-    <div class="text-center py-12 px-4 text-slate-500">
-      <h2 class="text-red-600 dark:text-red-400 mb-4 text-2xl font-semibold">No cars available</h2>
-      <p class="mb-8">Unable to load cars at the moment. Please try refreshing the page.</p>
-      <button
-        class="bg-blue-600 hover:bg-blue-700 text-white border-none px-6 py-3 rounded-md cursor-pointer font-medium transition-all duration-200"
-        on:click={refreshCars}
-      >
-        Try Again
-      </button>
-    </div>
-  {/if}
+<HomepageHeading/>
+
+<!-- Add the Filter component here -->
+<div class="filter-container">
+	<Filter
+		on:brandSelect={handleBrandSelect}
+		on:modelSelect={handleModelSelect}
+		on:brandClear={handleBrandClear}
+		on:modelClear={handleModelClear}
+	/>
 </div>
+
+<div class="container">
+	<main class="content">
+		{#if hasPopularCars || hasRecentCars || hasAllCars}
+			{#if hasPopularCars}
+				<section class="section">
+					<div class="flex flex-row items-center section-title gap-[12px]"><FireIcon/><h2>Popular</h2></div>
+					<div class="cars-grid">
+						{#each popularCarsWithLikeState as car (car.id)}
+							<PostCard {car} />
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			{#if hasRecentCars}
+				<section class="section">
+					<div class="flex flex-row items-center section-title gap-[12px]"><ClockIcon/><h2>Recent</h2></div>
+					<div class="cars-grid">
+						{#each recentCarsWithLikeState as car (car.id)}
+							<PostCard {car} />
+						{/each}
+					</div>
+				</section>
+			{/if}
+
+			{#if hasAllCars}
+				<section class="section">
+					<h2 class="section-title">Discover more</h2>
+					<div class="cars-grid">
+						{#each allCarsWithLikeState as car (car.id)}
+							<PostCard {car} />
+						{/each}
+					</div>
+				</section>
+			{/if}
+		{:else}
+			<CarsEmptyState
+				title="No cars available"
+				description="Unable to load cars at the moment. Please refresh the page."
+			/>
+		{/if}
+	</main>
+</div>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 15px;
+    }
+
+    .filter-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px 2rem;
+    }
+
+    @media (max-width: 750px) {
+        .container,
+        .filter-container {
+            padding-left: 0;
+            padding-right: 0;
+        }
+    }
+
+    .section {
+        margin-bottom: 3rem;
+    }
+
+    .section-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    @media (max-width: 750px) {
+        .section-title {
+            padding-left: 15px;
+        }
+    }
+
+    .cars-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5625rem; /* 25px */
+    }
+
+    @media (max-width: 750px) {
+        .cars-grid {
+            gap: 2.5rem; /* 40px */
+        }
+    }
+</style>
