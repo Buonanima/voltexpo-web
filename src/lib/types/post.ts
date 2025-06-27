@@ -13,7 +13,7 @@ export interface Post {
 	vin: string | null;
 	year: string | null;
 	km: number | null;
-	hp: number;
+	hp: number | null;
 
 	is_boosted: boolean;
 	boost_expires_at: string | null;

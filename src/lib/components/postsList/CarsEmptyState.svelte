@@ -1,4 +1,3 @@
-<!-- CarsEmptyState.svelte -->
 <script lang="ts">
 	export let title = "No items available";
 	export let description = "Unable to load items at the moment.";

@@ -1,7 +1,7 @@
 <!-- components/ModelInput.svelte -->
 <script lang="ts">
 	import { filterState } from '../filterState.svelte';
-	import CrossIcon from '$lib/components/icons/CrossIcon.svelte';
+	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
 
 	// Props
 	const { value = '', disabled = false, label = 'Model', onOpen, onClear, onChange } = $props<{

@@ -1,6 +1,6 @@
 <script>
-	// Define props or state that you need to pass to the Navbar component
-	import Navbar from '$lib/components/Navbar/Navbar.svelte';
+	// Define props or state that you need to pass to the navbar component
+	import Navbar from '$lib/components/navbar/Navbar.svelte';
 
 	let currentNavbarTab = 'home'; // Example value, update as needed
 	let isAuthenticated = false;   // Example value, update as needed

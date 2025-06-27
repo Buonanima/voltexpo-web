@@ -56,8 +56,8 @@
 </script>
 
 {#if isOpen}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		id="brand_card_container"
 		class="fixed top-0 left-0 z-10 h-full w-full flex justify-center items-center
@@ -66,8 +66,8 @@
 		onmousedown={handleBackdropClick}
 		ontouchstart={handleBackdropClick}
 	>
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			id="brand_card"
 			class="w-[500px] max-[550px]:w-full max-[750px]:mx-[20px]
@@ -122,8 +122,8 @@
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">No brands found</li>
 					{:else}
 						{#each filteredBrands as brand (brand.id)}
-							<!-- svelte-ignore a11y-click-events-have-key-events -->
-							<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+							<!-- svelte-ignore a11y_click_events_have_key_events -->
+							<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 							<li
 								class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded
                                        text-gray-700 dark:text-gray-200 transition-colors duration-150"
@@ -131,7 +131,7 @@
 								data-id={brand.id}
 								data-slug={brand.slug}
 							>
-								{brand.name}
+								{brand.brand_name}
 							</li>
 						{/each}
 					{/if}

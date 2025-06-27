@@ -1,36 +1,27 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { carsActions, likedCars } from '$lib/stores/posts';
 	import type { PageData } from './$types';
-	import PostCard from '$lib/components/PostCard.svelte';
+	import PostCard from '$lib/components/postsList/PostCard.svelte';
 
 	// Page-specific components
-	import CarsEmptyState from './components/CarsEmptyState.svelte';
-	import Navbar from '$lib/components/Navbar/Navbar.svelte';
+	import CarsEmptyState from '$lib/components/postsList/CarsEmptyState.svelte';
 	import HomepageHeading from './components/HomepageHeading.svelte';
-	import FireIcon from '$lib/components/icons/FireIcon.svelte';
-	import ClockIcon from '$lib/components/icons/ClockIcon.svelte';
-	import type { Brand, Model } from '$lib/components/filters/types';
+	import FireIcon from '$lib/components/shared/icons/FireIcon.svelte';
+	import ClockIcon from '$lib/components/shared/icons/ClockIcon.svelte';
 	import FilterHome from '$lib/components/filters/FilterHome/FilterHome.svelte';
+	import { carsActions, likedCars } from './store/posts';
+	import Navbar from '$lib/components/navbar/Navbar.svelte';
 
-	// Navbar options
-	let currentNavbarTab = 'home';
-	let isAuthenticated = false;
-	let createNewPostUrl = '/create-post';
-	let logInUrl = '/login';
+	const { data }: { data: PageData } = $props();
 
-	export let data: PageData;
+	const pageState = $state({
+		currentNavbarTab: 'home',
+		isAuthenticated: false,
+		createNewPostUrl: '/create-post',
+		logInUrl: '/login'
+	});
 
-	// Update these types to match what Filter component emits
-	let selectedBrand: Brand | null = null;
-	let selectedModel: Model | null = null;
-
-	// Reactive statements - always show all cars regardless of filters
-	$: popularCarsWithLikeState = enrichCarsWithLikeState(data.popularCars);
-	$: recentCarsWithLikeState = enrichCarsWithLikeState(data.recentCars);
-	$: allCarsWithLikeState = enrichCarsWithLikeState(data.allCars);
-
-	// Helper functions
+	// Helper function to enrich cars with like state
 	function enrichCarsWithLikeState(cars: typeof data.popularCars) {
 		return cars.map(car => ({
 			...car,
@@ -38,37 +29,15 @@
 		}));
 	}
 
-	// Dummy action handlers - no filtering logic
-	function handleBrandSelect(event: CustomEvent<Brand>) {
-		selectedBrand = event.detail;
-		selectedModel = null;
-		console.log('Brand selected (dummy action):', event.detail);
-		// No car list update - just store the selection
-	}
+	// Derived values using Svelte 5 runes
+	const popularCarsWithLikeState = $derived(enrichCarsWithLikeState(data.popularCars));
+	const recentCarsWithLikeState = $derived(enrichCarsWithLikeState(data.recentCars));
+	const allCarsWithLikeState = $derived(enrichCarsWithLikeState(data.allCars));
 
-	function handleModelSelect(event: CustomEvent<Model>) {
-		selectedModel = event.detail;
-		console.log('Model selected (dummy action):', event.detail);
-		// No car list update - just store the selection
-	}
-
-	function handleBrandClear() {
-		selectedBrand = null;
-		selectedModel = null;
-		console.log('Brand cleared (dummy action)');
-		// No car list update - just clear the selection
-	}
-
-	function handleModelClear() {
-		selectedModel = null;
-		console.log('Model cleared (dummy action)');
-		// No car list update - just clear the selection
-	}
-
-	// Computed values - always show cars regardless of filters
-	$: hasPopularCars = popularCarsWithLikeState.length > 0;
-	$: hasRecentCars = recentCarsWithLikeState.length > 0;
-	$: hasAllCars = allCarsWithLikeState.length > 0;
+	// Computed values for section visibility
+	const hasPopularCars = $derived(popularCarsWithLikeState.length > 0);
+	const hasRecentCars = $derived(recentCarsWithLikeState.length > 0);
+	const hasAllCars = $derived(allCarsWithLikeState.length > 0);
 </script>
 
 <svelte:head>
@@ -77,22 +46,18 @@
 </svelte:head>
 
 <Navbar
-	{currentNavbarTab}
-	{isAuthenticated}
-	{createNewPostUrl}
-	{logInUrl}
+	currentNavbarTab={pageState.currentNavbarTab}
+	isAuthenticated={pageState.isAuthenticated}
+	createNewPostUrl={pageState.createNewPostUrl}
+	logInUrl={pageState.logInUrl}
 />
 
-<HomepageHeading/>
+<header>
+	<HomepageHeading/>
+</header>
 
-<!-- Add the Filter component here -->
 <div class="filter-container">
-	<FilterHome
-		on:brandSelect={handleBrandSelect}
-		on:modelSelect={handleModelSelect}
-		on:brandClear={handleBrandClear}
-		on:modelClear={handleModelClear}
-	/>
+	<FilterHome />
 </div>
 
 <div class="container">

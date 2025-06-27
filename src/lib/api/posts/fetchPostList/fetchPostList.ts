@@ -8,31 +8,20 @@ export async function fetchPostList(options: FetchPostListOptions = {}): Promise
 		// Prepare request body
 		const requestBody: PostsRequestBody = {};
 
-		// Log the received options
-		console.log('Received options:', options);
-
 		if (options.filters && Object.keys(options.filters).length > 0) {
 			requestBody.filters = options.filters;
-			// Log applied filters
-			console.log('Applied filters:', requestBody.filters);
 		}
 
 		if (options.ordering) {
 			requestBody.ordering = options.ordering;
-			// Log ordering
-			console.log('Ordering:', requestBody.ordering);
 		}
 
 		if (options.excludedIds && options.excludedIds.length > 0) {
 			requestBody.excludedIds = options.excludedIds;
-			// Log excluded IDs
-			console.log('Excluded IDs:', requestBody.excludedIds);
 		}
 
 		if (options.limit !== undefined) {
 			requestBody.limit = options.limit;
-			// Log limit
-			console.log('Limit:', requestBody.limit);
 		}
 
 		// Make the request using POST method

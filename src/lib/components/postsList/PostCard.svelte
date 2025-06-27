@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Post } from '$lib/types/post.js';
-	import HeartButton from './HeartButton.svelte';
-	import { carsActions } from '$lib/stores/posts';
+	import HeartButton from '../shared/HeartButton.svelte';
+	import { carsActions } from '../../../routes/store/posts';
 
 	export let car: Post;
 

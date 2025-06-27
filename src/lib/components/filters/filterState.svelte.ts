@@ -1,4 +1,4 @@
-import type { Brand, Model, FilterParams } from './types';
+import type { Brand, FilterParams, Model } from './types';
 import { getBrandsList, getModelsById } from './filterApi';
 
 interface FilterState {
@@ -10,7 +10,7 @@ interface FilterState {
 	brandLoading: boolean;
 	brandError: boolean;
 
-	// Model state  
+	// Model state
 	models: Model[];
 	selectedModel: Model | null;
 	isModelDropdownOpen: boolean;
@@ -38,21 +38,19 @@ const state = $state<FilterState>({
 
 // Derived state functions
 export function filteredBrands() {
-	const result = state.brandSearchText
-		? state.brands.filter(brand =>
-			brand.name.toLowerCase().includes(state.brandSearchText.toLowerCase())
-		)
+	return state.brandSearchText
+		? state.brands.filter((brand) =>
+				brand.brand_name.toLowerCase().includes(state.brandSearchText.toLowerCase())
+			)
 		: state.brands;
-	return result;
 }
 
 export function filteredModels() {
-	const result = state.modelSearchText
-		? state.models.filter(model =>
-			model.model_name.toLowerCase().includes(state.modelSearchText.toLowerCase())
-		)
+	return state.modelSearchText
+		? state.models.filter((model) =>
+				model.model_name.toLowerCase().includes(state.modelSearchText.toLowerCase())
+			)
 		: state.models;
-	return result;
 }
 
 export function isModelDisabled() {
@@ -61,19 +59,43 @@ export function isModelDisabled() {
 
 // State getters
 export const filterState = {
-	get brands() { return state.brands; },
-	get selectedBrand() { return state.selectedBrand; },
-	get isBrandDropdownOpen() { return state.isBrandDropdownOpen; },
-	get brandSearchText() { return state.brandSearchText; },
-	get brandLoading() { return state.brandLoading; },
-	get brandError() { return state.brandError; },
+	get brands() {
+		return state.brands;
+	},
+	get selectedBrand() {
+		return state.selectedBrand;
+	},
+	get isBrandDropdownOpen() {
+		return state.isBrandDropdownOpen;
+	},
+	get brandSearchText() {
+		return state.brandSearchText;
+	},
+	get brandLoading() {
+		return state.brandLoading;
+	},
+	get brandError() {
+		return state.brandError;
+	},
 
-	get models() { return state.models; },
-	get selectedModel() { return state.selectedModel; },
-	get isModelDropdownOpen() { return state.isModelDropdownOpen; },
-	get modelSearchText() { return state.modelSearchText; },
-	get modelLoading() { return state.modelLoading; },
-	get modelError() { return state.modelError; }
+	get models() {
+		return state.models;
+	},
+	get selectedModel() {
+		return state.selectedModel;
+	},
+	get isModelDropdownOpen() {
+		return state.isModelDropdownOpen;
+	},
+	get modelSearchText() {
+		return state.modelSearchText;
+	},
+	get modelLoading() {
+		return state.modelLoading;
+	},
+	get modelError() {
+		return state.modelError;
+	}
 };
 
 // Brand actions
@@ -95,15 +117,15 @@ export async function loadBrands() {
 export function selectBrand(brand: Brand) {
 	state.selectedBrand = brand;
 	state.isBrandDropdownOpen = false;
-	
+
 	// Clear brand search text to reset card state
 	state.brandSearchText = '';
-	
+
 	// Clear model when brand changes
 	if (state.selectedModel) {
 		clearModel();
 	}
-	
+
 	// Reset model state
 	state.models = [];
 	state.modelSearchText = '';
@@ -131,7 +153,7 @@ export function setBrandSearch(searchText: string) {
 // Model actions
 export async function loadModels(brandId: number) {
 	if (!brandId) return;
-	
+
 	state.modelLoading = true;
 	state.modelError = false;
 
@@ -149,7 +171,7 @@ export async function loadModels(brandId: number) {
 export function selectModel(model: Model) {
 	state.selectedModel = model;
 	state.isModelDropdownOpen = false;
-	
+
 	// Clear model search text to reset card state
 	state.modelSearchText = '';
 }
@@ -187,19 +209,19 @@ export function resetAllFilters() {
 
 export function getFilterParams(): FilterParams {
 	const params: FilterParams = {};
-	
+
 	if (state.selectedBrand) {
 		params.Brand = {
 			Value: state.selectedBrand.slug
 		};
 	}
-	
+
 	if (state.selectedModel) {
 		params.Model = {
 			Value: state.selectedModel.slug
 		};
 	}
-	
+
 	return params;
 }
 

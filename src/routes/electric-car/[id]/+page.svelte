@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import HeartButton from '$lib/components/HeartButton.svelte';
+	import HeartButton from '$lib/components/shared/HeartButton.svelte';
 	import type { PageData } from './$types';
-	import { carsActions, likedCars } from '$lib/stores/posts';
+	import { carsActions, likedCars } from '../../store/posts';
 
 	export let data: PageData;
 
@@ -21,24 +21,15 @@
 		goto('/');
 	}
 
-	function formatPrice(price: number): string {
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: 'EUR',
-			minimumFractionDigits: 0,
-			maximumFractionDigits: 0,
-		}).format(price);
-	}
-
 	$: car = data.car;
-	$: registrationDate = `${car.firstRegistrationMonth}/${car.firstRegistrationYear}`;
+	$: registrationDate = `${car.first_registration_month}/${car.first_registration_year}`;
 	$: range = car.configuration?.technical_specs?.range?.combined_warm;
 	$: specs = car.configuration?.technical_specs;
 </script>
 
 <svelte:head>
 	<title>{car.title}</title>
-	<meta name="description" content="{car.title} - {formatPrice(car.price)} - {car.hp} HP Electric Vehicle" />
+	<meta name="description" content="{car.title} - {car.price} - {car.hp} HP Electric Vehicle" />
 </svelte:head>
 
 <div class="container">
@@ -51,7 +42,7 @@
 	<article class="car-detail">
 		<div class="car-images">
 			<img
-				src={car['main-picture-url']}
+				src={car.main_picture_url}
 				alt={car.title}
 				class="main-image"
 			/>
@@ -61,7 +52,7 @@
 			<header class="car-header">
 				<div class="title-section">
 					<h1>{car.title}</h1>
-					<div class="price">{formatPrice(car.price)}</div>
+					<div class="price">{car.price}</div>
 				</div>
 				<HeartButton
 					isLiked={carWithLikeState.isLiked}
@@ -120,7 +111,7 @@
 							<span class="label">Year:</span>
 							<span class="value">{registrationDate}</span>
 						</div>
-						{#if car.km > 0}
+						{#if car.km != null}
 							<div class="spec-item">
 								<span class="label">Mileage:</span>
 								<span class="value">{car.km.toLocaleString()} km</span>

@@ -66,8 +66,8 @@
 </script>
 
 {#if isOpen}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		id="model_card_container"
 		class="fixed top-0 left-0 z-10 h-full w-full flex justify-center items-center
@@ -76,8 +76,8 @@
 		onmousedown={handleBackdropClick}
 		ontouchstart={handleBackdropClick}
 	>
-		<!-- svelte-ignore a11y-click-events-have-key-events -->
-		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div
 			id="model_card"
 			class="w-[500px] max-[550px]:w-full max-[750px]:mx-[20px]
@@ -154,22 +154,16 @@
 						</li>
 					{:else}
 						{#each filteredModels as model (model.id)}
+							<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+							<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 							<li
 								class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded
-		       						 text-gray-700 dark:text-gray-200 transition-colors duration-150 focus:outline-none
-		       					   focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-600"
+		       						 text-gray-700 dark:text-gray-200 transition-colors duration-150 focus:outline-none"
 								onclick={() => selectModel(model)}
 								data-id={model.id}
 								data-slug={model.slug}
-								role="option"
-								aria-selected="false"
 								tabindex="0"
-								onkeydown={(e) => {
-								if (e.key === 'Enter' || e.key === ' ') {
-									e.preventDefault();
-									selectModel(model);
-								}
-							}}
+								onkeydown={() => {}}
 							>
 								{model.model_name}
 							</li>

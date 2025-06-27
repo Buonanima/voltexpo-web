@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
+import { fetchPostById } from '$lib/api/posts/fetchPostById';
 
-import { fetchPostById } from '$lib/server/posts/fetchPostById';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const car = await fetchPostById(params.id);

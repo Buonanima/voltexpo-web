@@ -1,7 +1,8 @@
 import type { PageServerLoad } from './$types';
-import { fetchPostList } from '$lib/server/posts/fetchPostList/fetchPostList';
-import { extractCarIds } from '$lib/server/posts/fetchPostList/excludeIDsHelpers';
-import { OrderDirection, OrderField, OrderingHelpers } from '$lib/server/posts/fetchPostList/orderingHelpers';
+import { extractCarIds } from '$lib/api/posts/fetchPostList/excludeIDsHelpers';
+import { fetchPostList } from '$lib/api/posts/fetchPostList/fetchPostList';
+import { OrderDirection, OrderField, OrderingHelpers } from '$lib/api/posts/fetchPostList/orderingHelpers';
+
 
 export const load: PageServerLoad = async () => {
 	try {
