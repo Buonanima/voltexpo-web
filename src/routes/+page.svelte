@@ -3,7 +3,6 @@
 	import { carsActions, likedCars } from '$lib/stores/posts';
 	import type { PageData } from './$types';
 	import PostCard from '$lib/components/PostCard.svelte';
-	import Filter from '$lib/components/filters/FilterHome/Filter.svelte'; // Import the Filter component
 
 	// Page-specific components
 	import CarsEmptyState from './components/CarsEmptyState.svelte';
@@ -12,6 +11,7 @@
 	import FireIcon from '$lib/components/icons/FireIcon.svelte';
 	import ClockIcon from '$lib/components/icons/ClockIcon.svelte';
 	import type { Brand, Model } from '$lib/components/filters/types';
+	import FilterHome from '$lib/components/filters/FilterHome/FilterHome.svelte';
 
 	// Navbar options
 	let currentNavbarTab = 'home';
@@ -87,7 +87,7 @@
 
 <!-- Add the Filter component here -->
 <div class="filter-container">
-	<Filter
+	<FilterHome
 		on:brandSelect={handleBrandSelect}
 		on:modelSelect={handleModelSelect}
 		on:brandClear={handleBrandClear}

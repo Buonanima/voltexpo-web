@@ -1,21 +1,20 @@
 <!-- components/BrandInput.svelte -->
 <script lang="ts">
-	import { brandStore } from '../filterStore';
+	import { filterState } from '../filterState.svelte';
 	import CrossIcon from '$lib/components/icons/CrossIcon.svelte';
 
 	// Props
-	export let value = '';
-	export let disabled = false;
+	const { value = '', disabled = false, onOpen, onClear, onChange } = $props<{
+		value?: string;
+		disabled?: boolean;
+		onOpen?: () => void;
+		onClear?: () => void;
+		onChange?: (value: string | null) => void;
+	}>();
 
-	// Event handlers as props
-	export let onOpen: (() => void) | undefined = undefined;
-	export let onClear: (() => void) | undefined = undefined;
-	export let onChange: ((value: string | null) => void) | undefined = undefined;
-
-	// Reactive statements
-	$: displayValue = $brandStore.selected?.name || value;
-	$: showCross = !!displayValue && !disabled;
-	// $: isEmpty = !displayValue;
+	// Derived values using runes
+	const displayValue = $derived(filterState.selectedBrand?.name || value);
+	const showCross = $derived(!!displayValue && !disabled);
 
 	// Event handlers
 	function handleOpenBrandCard(): void {
@@ -56,7 +55,7 @@
 	<div class="flex-1 pl-[15px] pr-[10px] py-[8px]">
 		<label
 			for="filter_minimal_input_brand"
-			class="block text-[15px] max-[750px]:text-[14px] text-zinc-500 dark:text-zinc-400
+			class="block text-[15px] max-[750px]:text-[14px] text-zinc-600 dark:text-zinc-300
 				{disabled ? 'cursor-not-allowed' : 'cursor-pointer'}"
 		>
 			Brand

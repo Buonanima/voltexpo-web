@@ -1,34 +1,43 @@
 <!-- components/BrandCard.svelte -->
 <script lang="ts">
 	import type { Brand } from '../types';
-	import { createEventDispatcher } from 'svelte';
 
-	const dispatch = createEventDispatcher<{
-		select: Brand;
-		close: void;
-		search: string;
-		load: void;
+	// Props with callback functions
+	const { 
+		isOpen = false,
+		brands = [],
+		searchText = '',
+		loading = false,
+		error = false,
+		filteredBrands = [],
+		onSelect,
+		onClose,
+		onSearch,
+		onLoad
+	} = $props<{
+		isOpen?: boolean;
+		brands?: Brand[];
+		searchText?: string;
+		loading?: boolean;
+		error?: boolean;
+		filteredBrands?: Brand[];
+		onSelect?: (brand: Brand) => void;
+		onClose?: () => void;
+		onSearch?: (searchText: string) => void;
+		onLoad?: () => void;
 	}>();
 
-	// Props - completely controlled from outside
-	export let isOpen: boolean = false;
-	export let brands: Brand[] = [];
-	export let searchText: string = '';
-	export let loading: boolean = false;
-	export let error: boolean = false;
-	export let filteredBrands: Brand[] = [];
-
 	function closeBrandCard(): void {
-		dispatch('close');
+		onClose?.();
 	}
 
 	function selectBrand(brand: Brand): void {
-		dispatch('select', brand);
+		onSelect?.(brand);
 	}
 
 	function handleSearchInput(event: Event): void {
 		const target = event.target as HTMLInputElement;
-		dispatch('search', target.value);
+		onSearch?.(target.value);
 	}
 
 	function handleBackdropClick(event: MouseEvent | TouchEvent): void {
@@ -37,10 +46,13 @@
 		}
 	}
 
-	// Dispatch load event when component becomes visible
-	$: if (isOpen && brands.length === 0 && !loading && !error) {
-		dispatch('load');
-	}
+	// Call load when component becomes visible
+	$effect(() => {
+		if (isOpen && brands.length === 0 && !loading && !error) {
+			onLoad?.();
+		}
+	});
+
 </script>
 
 {#if isOpen}
@@ -50,9 +62,9 @@
 		id="brand_card_container"
 		class="fixed top-0 left-0 z-10 h-full w-full flex justify-center items-center
                bg-zinc-500/20 dark:bg-zinc-700/30"
-		on:click={handleBackdropClick}
-		on:mousedown={handleBackdropClick}
-		on:touchstart={handleBackdropClick}
+		onclick={handleBackdropClick}
+		onmousedown={handleBackdropClick}
+		ontouchstart={handleBackdropClick}
 	>
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -63,9 +75,9 @@
                    shadow-[0_5px_30px_rgb(0,0,0,0.15)]
                    backdrop-blur-[25px]
                    bg-white/70 dark:bg-zinc-950/70"
-			on:click|stopPropagation
-			on:mousedown|stopPropagation
-			on:touchstart|stopPropagation
+			onclick={(e) => e.stopPropagation()}
+			onmousedown={(e) => e.stopPropagation()}
+			ontouchstart={(e) => e.stopPropagation()}
 		>
 			<label
 				for="brand_card_input"
@@ -81,7 +93,7 @@
 					id="brand_card_input"
 					placeholder="Search..."
 					value={searchText}
-					on:input={handleSearchInput}
+					oninput={handleSearchInput}
 					class="w-[calc(100%-30px)] mx-[15px] mb-[15px] px-[15px] h-[40px]
                            ring-0 focus:ring-0 rounded-[10px]
                            bg-white dark:bg-transparent
@@ -115,7 +127,7 @@
 							<li
 								class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded
                                        text-gray-700 dark:text-gray-200 transition-colors duration-150"
-								on:click={() => selectBrand(brand)}
+								onclick={() => selectBrand(brand)}
 								data-id={brand.id}
 								data-slug={brand.slug}
 							>

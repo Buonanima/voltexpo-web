@@ -1,28 +1,26 @@
 <!-- components/ModelInput.svelte -->
 <script lang="ts">
-	import { modelStore } from '../filterStore';
+	import { filterState } from '../filterState.svelte';
 	import CrossIcon from '$lib/components/icons/CrossIcon.svelte';
 
 	// Props
-	export let value = '';
-	export let disabled = false;
-	export let label = 'Model';
+	const { value = '', disabled = false, label = 'Model', onOpen, onClear, onChange } = $props<{
+		value?: string;
+		disabled?: boolean;
+		label?: string;
+		onOpen?: () => void;
+		onClear?: () => void;
+		onChange?: (value: string | null) => void;
+	}>();
 
 	// Constants
 	const ENABLED_PLACEHOLDER = 'Select';
 	const DISABLED_PLACEHOLDER = 'Select brand first';
 
-	// Event handlers as props (modern Svelte 5 approach)
-	export let onOpen: (() => void) | undefined = undefined;
-	export let onClear: (() => void) | undefined = undefined;
-	export let onChange: ((value: string | null) => void) | undefined = undefined;
-
-	// Reactive statements with improved logic
-	$: displayValue = $modelStore.selected?.model_name || $modelStore.selected?.value || value;
-	$: showCross = !!displayValue && !disabled;
-	$: placeholder = disabled ? DISABLED_PLACEHOLDER : ENABLED_PLACEHOLDER;
-	$: isInteractive = !disabled;
-	// $: isEmpty = !displayValue;
+	// Derived values using runes
+	const displayValue = $derived(filterState.selectedModel?.model_name || filterState.selectedModel?.value || value);
+	const showCross = $derived(!!displayValue && !disabled);
+	const placeholder = $derived(disabled ? DISABLED_PLACEHOLDER : ENABLED_PLACEHOLDER);
 
 	// Event handlers
 	function handleOpenModelCard(): void {
@@ -70,29 +68,20 @@
 <div
 	id="filter_minimal_input_container_model"
 	class="bg-white ml-[-1px] dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-r-[16px] w-full flex
-		{disabled ? 'opacity-50' : 'hover:border-zinc-400 dark:hover:border-zinc-500'}
-		border-zinc-300 dark:border-zinc-600
-		overflow-hidden
-		transition-colors duration-200"
+				 overflow-hidden
+				 transition-colors duration-200 cursor-pointer"
 	role="button"
 	tabindex={disabled ? -1 : 0}
-	aria-label={displayValue
-		? `Selected model: ${displayValue}. ${disabled ? 'Disabled.' : 'Click to change.'}`
-		: disabled
-			? 'Model selection disabled. Please select a brand first.'
-			: 'Click to select a model'
-	}
+	aria-label="Click to select a model"
 	aria-expanded="false"
 	aria-haspopup="dialog"
-	aria-disabled={disabled}
 	onclick={handleContainerClick}
 	onkeydown={()=>{}}
 >
 	<div class="flex-1 pl-[15px] pr-[10px] py-[8px]">
 		<label
 			for="filter_minimal_input_model"
-			class="block text-[15px] max-[750px]:text-[14px] text-zinc-500 dark:text-zinc-400
-				{isInteractive ? 'cursor-pointer' : 'cursor-not-allowed'}"
+			class="block text-[15px] max-[750px]:text-[14px] {disabled ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500 dark:text-zinc-400'}"
 		>
 			{label}
 		</label>
@@ -104,8 +93,7 @@
 			value={displayValue}
 			{disabled}
 			{placeholder}
-			class="w-full bg-transparent text-[15px] max-[750px]:text-[14px] text-zinc-800 dark:text-white placeholder:text-zinc-400 outline-none
-				{isInteractive ? 'cursor-pointer' : 'cursor-not-allowed'}"
+			class="w-full bg-transparent text-[15px] max-[750px]:text-[14px] text-zinc-800 dark:text-white placeholder:text-zinc-400 outline-none"
 			onclick={handleOpenModelCard}
 			onkeydown={handleInputKeydown}
 			aria-describedby={showCross ? 'filter_minimal_input_model_clear_hint' : undefined}
