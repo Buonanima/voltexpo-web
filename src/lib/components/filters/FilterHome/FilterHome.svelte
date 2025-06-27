@@ -24,15 +24,12 @@
 	import type { Brand, Model } from '../types';
 
 	// Brand handlers
-	async function handleBrandOpen() {
+	function handleBrandOpen() {
 		openBrandDropdown();
-		if (filterState.brands.length === 0) {
-			await loadBrands();
-		}
 	}
 
-	function handleBrandSelect(brand: Brand) {
-		selectBrand(brand);
+	async function handleBrandSelect(brand: Brand) {
+		await selectBrand(brand);
 	}
 
 	function handleBrandClear() {
@@ -52,12 +49,9 @@
 	}
 
 	// Model handlers
-	async function handleModelOpen() {
+	function handleModelOpen() {
 		if (filterState.selectedBrand?.id) {
 			openModelDropdown();
-			if (filterState.models.length === 0) {
-				await loadModels(filterState.selectedBrand.id);
-			}
 		}
 	}
 
@@ -84,6 +78,13 @@
 	async function handleModelRetry(brandId: number) {
 		await loadModels(brandId);
 	}
+
+	// Load brands on component mount
+	$effect(() => {
+		if (filterState.brands.length === 0 && !filterState.brandLoading && !filterState.brandError) {
+			loadBrands();
+		}
+	});
 </script>
 
 <div

@@ -56,12 +56,6 @@
 		}
 	}
 
-	// Call load when component becomes visible and brandId is available
-	$effect(() => {
-		if (isOpen && brandId && models.length === 0 && !loading && !error) {
-			onLoad?.(brandId);
-		}
-	});
 
 </script>
 

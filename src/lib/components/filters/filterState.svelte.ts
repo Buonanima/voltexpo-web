@@ -114,7 +114,7 @@ export async function loadBrands() {
 	}
 }
 
-export function selectBrand(brand: Brand) {
+export async function selectBrand(brand: Brand) {
 	state.selectedBrand = brand;
 	state.isBrandDropdownOpen = false;
 
@@ -130,6 +130,9 @@ export function selectBrand(brand: Brand) {
 	state.models = [];
 	state.modelSearchText = '';
 	state.modelError = false;
+
+	// Load models for the selected brand immediately
+	await loadModels(brand.id);
 }
 
 export function clearBrand() {

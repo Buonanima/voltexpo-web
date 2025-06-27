@@ -46,12 +46,6 @@
 		}
 	}
 
-	// Call load when component becomes visible
-	$effect(() => {
-		if (isOpen && brands.length === 0 && !loading && !error) {
-			onLoad?.();
-		}
-	});
 
 </script>
 
