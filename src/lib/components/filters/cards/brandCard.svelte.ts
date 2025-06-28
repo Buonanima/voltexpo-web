@@ -37,3 +37,6 @@ export async function loadBrands() {
 		brandCardSvelte.loading = false;
 	}
 }
+
+// Load brands immediately when the module is imported
+loadBrands().then();

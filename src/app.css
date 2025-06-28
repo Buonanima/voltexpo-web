@@ -607,10 +607,6 @@ video {
   border-width: 0;
 }
 
-.visible {
-  visibility: visible;
-}
-
 .static {
   position: static;
 }
@@ -1580,11 +1576,6 @@ video {
 .dark\:focus\:border-brand-blue_light:focus:is(.dark *) {
   --tw-border-opacity: 1;
   border-color: rgb(3 108 228 / var(--tw-border-opacity, 1));
-}
-
-.dark\:focus\:ring-blue-600:focus:is(.dark *) {
-  --tw-ring-opacity: 1;
-  --tw-ring-color: rgb(37 99 235 / var(--tw-ring-opacity, 1));
 }
 
 @media (max-width: 750px) {

@@ -1,28 +1,22 @@
 <!-- components/BrandCard.svelte -->
 <script lang="ts">
 	import type { Brand } from '../types';
+	import {
+		brandCardSvelte,
+		loadBrands,
+		getFilteredBrands
+	} from './brandCard.svelte.js';
 
 	// Props with callback functions
 	const { 
 		isOpen = false,
-		searchText = '',
-		loading = false,
-		error = false,
-		filteredBrands = [],
 		onSelect,
 		onClose,
-		onSearch,
 	} = $props<{
 		isOpen?: boolean;
-		brands?: Brand[];
-		searchText?: string;
-		loading?: boolean;
-		error?: boolean;
-		filteredBrands?: Brand[];
+		brandId?: number | null;
 		onSelect: (brand: Brand) => void;
 		onClose: () => void;
-		onSearch?: (searchText: string) => void;
-		onLoad?: () => void;
 	}>();
 
 	function closeBrandCard(): void {
@@ -35,7 +29,7 @@
 
 	function handleSearchInput(event: Event): void {
 		const target = event.target as HTMLInputElement;
-		onSearch?.(target.value);
+		brandCardSvelte.searchText = target.value;
 	}
 
 	function handleBackdropClick(event: MouseEvent | TouchEvent): void {
@@ -44,9 +38,12 @@
 		}
 	}
 
-	// async function handleRetry(): void {
-	// 	await loadBrands();
-	// }
+	async function handleRetry(): Promise<void> {
+		await loadBrands();
+	}
+
+	// Brands are now loaded automatically when the module is imported
+	// No need to wait for the card to open
 
 </script>
 
@@ -87,7 +84,7 @@
 				<input
 					id="brand_card_input"
 					placeholder="Search..."
-					value={searchText}
+					value={brandCardSvelte.searchText}
 					oninput={handleSearchInput}
 					class="w-[calc(100%-30px)] mx-[15px] mb-[15px] px-[15px] h-[40px]
                            ring-0 focus:ring-0 rounded-[10px]
@@ -109,14 +106,26 @@
 					id="brand_card_list"
 					class="card_list mr-[10px] text-gray-600"
 				>
-					{#if loading}
+					{#if brandCardSvelte.loading}
 						<li class="p-4 text-center text-gray-600 dark:text-gray-300">Loading...</li>
-					{:else if error}
-						<li class="p-4 text-center text-red-500">Error loading brands!</li>
-					{:else if filteredBrands.length === 0}
+					{:else if brandCardSvelte.error}
+						<li class="p-4 text-center">
+							<div class="text-red-500 mb-2">Error loading brands</div>
+							<button
+								onclick={handleRetry}
+								class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600
+								       transition-colors duration-150 focus:outline-none focus:ring-2
+								       focus:ring-blue-300"
+							>
+								Retry
+							</button>
+						</li>
+					{:else if getFilteredBrands().length === 0 && brandCardSvelte.brands.length > 0}
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">No brands found</li>
+					{:else if getFilteredBrands().length === 0}
+						<li class="p-4 text-center text-gray-500 dark:text-gray-400">No brands available</li>
 					{:else}
-						{#each filteredBrands as brand (brand.id)}
+						{#each getFilteredBrands() as brand (brand.id)}
 							<!-- svelte-ignore a11y_click_events_have_key_events -->
 							<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 							<li

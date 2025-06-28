@@ -5,7 +5,7 @@
 	import ModelCard from '../cards/ModelCard.svelte';
 	import { brandInputSvelte } from './brandInput.svelte';
 	import { modelInputSvelte } from './modelInput.svelte';
-	import { brandCardSvelte, loadBrands, getFilteredBrands } from '../cards/brandCard.svelte';
+	import { brandCardSvelte } from '../cards/brandCard.svelte.js';
 	import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
 	import type { Brand, Model } from '../types';
 
@@ -43,14 +43,6 @@
 		brandCardSvelte.searchText = '';
 	}
 
-	function handleBrandSearch(searchText: string) {
-		brandCardSvelte.searchText = searchText;
-	}
-
-	async function handleBrandLoad() {
-		await loadBrands();
-	}
-
 	function handleModelSelect(model: Model) {
 		modelInputSvelte.selectedModel = model;
 		modelCardState.isOpen = false;
@@ -65,12 +57,6 @@
 		modelCardState.searchText = '';
 	}
 
-	// Load brands on component mount
-	$effect(() => {
-		if (brandCardSvelte.brands.length === 0 && !brandCardSvelte.loading && !brandCardSvelte.error) {
-			loadBrands();
-		}
-	});
 </script>
 
 <div
@@ -96,15 +82,8 @@
 <!-- Modal Cards -->
 <BrandCard
 	isOpen={brandCardSvelte.isOpen}
-	brands={brandCardSvelte.brands}
-	searchText={brandCardSvelte.searchText}
-	loading={brandCardSvelte.loading}
-	error={brandCardSvelte.error}
-	filteredBrands={getFilteredBrands()}
 	onSelect={handleBrandSelect}
 	onClose={handleBrandClose}
-	onSearch={handleBrandSearch}
-	onLoad={handleBrandLoad}
 />
 
 <ModelCard
