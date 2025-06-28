@@ -5,7 +5,6 @@
 	// Props with callback functions
 	const { 
 		isOpen = false,
-		brands = [],
 		searchText = '',
 		loading = false,
 		error = false,
@@ -13,7 +12,6 @@
 		onSelect,
 		onClose,
 		onSearch,
-		onLoad
 	} = $props<{
 		isOpen?: boolean;
 		brands?: Brand[];
@@ -21,18 +19,18 @@
 		loading?: boolean;
 		error?: boolean;
 		filteredBrands?: Brand[];
-		onSelect?: (brand: Brand) => void;
-		onClose?: () => void;
+		onSelect: (brand: Brand) => void;
+		onClose: () => void;
 		onSearch?: (searchText: string) => void;
 		onLoad?: () => void;
 	}>();
 
 	function closeBrandCard(): void {
-		onClose?.();
+		onClose();
 	}
 
 	function selectBrand(brand: Brand): void {
-		onSelect?.(brand);
+		onSelect(brand);
 	}
 
 	function handleSearchInput(event: Event): void {
@@ -46,6 +44,9 @@
 		}
 	}
 
+	// async function handleRetry(): void {
+	// 	await loadBrands();
+	// }
 
 </script>
 

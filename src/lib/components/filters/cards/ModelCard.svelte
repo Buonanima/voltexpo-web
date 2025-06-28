@@ -1,34 +1,23 @@
 <!-- components/ModelCard.svelte -->
 <script lang="ts">
 	import type { Model } from '../types';
+	import {
+		loadModels,
+		getFilteredModels,
+		modelCardState
+	} from './modelCard.svelte';
 
 	// Props with callback functions
 	const { 
 		isOpen = false,
-		models = [],
-		searchText = '',
-		loading = false,
-		error = false,
-		filteredModels = [],
 		brandId = null,
 		onSelect,
 		onClose,
-		onSearch,
-		onLoad,
-		onRetry
 	} = $props<{
 		isOpen?: boolean;
-		models?: Model[];
-		searchText?: string;
-		loading?: boolean;
-		error?: boolean;
-		filteredModels?: Model[];
 		brandId?: number | null;
 		onSelect?: (model: Model) => void;
 		onClose?: () => void;
-		onSearch?: (searchText: string) => void;
-		onLoad?: (brandId: number) => void;
-		onRetry?: (brandId: number) => void;
 	}>();
 
 	function closeModelCard(): void {
@@ -41,7 +30,7 @@
 
 	function handleSearchInput(event: Event): void {
 		const target = event.target as HTMLInputElement;
-		onSearch?.(target.value);
+		modelCardState.searchText = target.value;
 	}
 
 	function handleBackdropClick(event: MouseEvent | TouchEvent): void {
@@ -50,12 +39,13 @@
 		}
 	}
 
-	function handleRetry(): void {
-		if (brandId) {
-			onRetry?.(brandId);
-		}
+	async function handleRetry(): Promise<void> {
+		await loadModels(brandId)
 	}
 
+	function handleModelSelect(model: Model): void {
+		selectModel(model);
+	}
 
 </script>
 
@@ -95,7 +85,7 @@
 			<input
 				id="model_card_input"
 				placeholder="Search..."
-				value={searchText}
+				value={modelCardState.searchText}
 				oninput={handleSearchInput}
 				disabled={!brandId}
 				class="w-[calc(100%-30px)] mx-[15px] mb-[15px] px-[15px] h-[40px]
@@ -122,11 +112,11 @@
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">
 							Please select a brand first
 						</li>
-					{:else if loading}
+					{:else if modelCardState.loading}
 						<li class="p-4 text-center text-gray-600 dark:text-gray-300">
 							Loading models...
 						</li>
-					{:else if error}
+					{:else if modelCardState.error}
 						<li class="p-4 text-center">
 							<div class="text-red-500 mb-2">Error loading models</div>
 							<button
@@ -138,22 +128,22 @@
 								Retry
 							</button>
 						</li>
-					{:else if filteredModels.length === 0 && models.length > 0}
+					{:else if getFilteredModels().length === 0 && modelCardState.models.length > 0}
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">
-							No models match your search
+							No Models found
 						</li>
-					{:else if filteredModels.length === 0}
+					{:else if getFilteredModels().length === 0}
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">
 							No models available for this brand
 						</li>
 					{:else}
-						{#each filteredModels as model (model.id)}
+						{#each getFilteredModels() as model (model.id)}
 							<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 							<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 							<li
 								class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded
 		       						 text-gray-700 dark:text-gray-200 transition-colors duration-150 focus:outline-none"
-								onclick={() => selectModel(model)}
+								onclick={() => handleModelSelect(model)}
 								data-id={model.id}
 								data-slug={model.slug}
 								tabindex="0"

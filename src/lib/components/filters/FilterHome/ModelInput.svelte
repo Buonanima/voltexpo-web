@@ -1,14 +1,14 @@
-<!-- components/ModelInput.svelte -->
 <script lang="ts">
-	import { filterState } from '../filterState.svelte';
+	import { modelInputSvelte } from './modelInput.svelte';
+	import { brandInputSvelte } from './brandInput.svelte';
+	import { modelCardState } from '../cards/modelCard.svelte';
 	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
 
 	// Props
-	const { value = '', disabled = false, label = 'Model', onOpen, onClear, onChange } = $props<{
+	const { disabled = false, label = 'Model', onClear, onChange } = $props<{
 		value?: string;
 		disabled?: boolean;
 		label?: string;
-		onOpen?: () => void;
 		onClear?: () => void;
 		onChange?: (value: string | null) => void;
 	}>();
@@ -17,52 +17,24 @@
 	const ENABLED_PLACEHOLDER = 'Select';
 	const DISABLED_PLACEHOLDER = 'Select brand first';
 
-	// Derived values using runes
-	const displayValue = $derived(filterState.selectedModel?.model_name || filterState.selectedModel?.value || value);
+	// DERIVED VALUES
+	const displayValue = $derived(modelInputSvelte.selectedModel?.model_name);
 	const showCross = $derived(!!displayValue && !disabled);
 	const placeholder = $derived(disabled ? DISABLED_PLACEHOLDER : ENABLED_PLACEHOLDER);
 
-	// Event handlers
-	function handleOpenModelCard(): void {
-		if (!disabled) {
-			onOpen?.();
-		}
-	}
-
+	// HANDLERS
 	function handleClearModel(event: Event): void {
-		if (disabled) return;
-
 		event.stopPropagation();
 		onClear?.();
 		onChange?.(null);
 	}
 
-	function handleInputKeydown(event: KeyboardEvent): void {
-		if (disabled) return;
-
-		// Prevent default input behavior but allow container to handle it
-		if (event.key === 'Enter' || event.key === ' ') {
-			event.preventDefault();
+	function handleInputClick(): void {
+		if (brandInputSvelte.selectedBrand?.id) {
+			modelCardState.isOpen = true;
 		}
 	}
 
-	function handleClearKeydown(event: KeyboardEvent): void {
-		if (disabled) return;
-
-		if (event.key === 'Enter' || event.key === ' ') {
-			event.preventDefault();
-			handleClearModel(event);
-		}
-	}
-
-	// Container click handler with better event handling
-	function handleContainerClick(event: MouseEvent): void {
-		// Only handle clicks on the container itself, not on child elements
-		const target = event.target as HTMLElement;
-		if (target.closest('button')) return;
-
-		handleOpenModelCard();
-	}
 </script>
 
 <div
@@ -75,7 +47,7 @@
 	aria-label="Click to select a model"
 	aria-expanded="false"
 	aria-haspopup="dialog"
-	onclick={handleContainerClick}
+	onclick={handleInputClick}
 	onkeydown={()=>{}}
 >
 	<div class="flex-1 pl-[15px] pr-[10px] py-[8px]">
@@ -94,8 +66,6 @@
 			{disabled}
 			{placeholder}
 			class="w-full bg-transparent text-[15px] max-[750px]:text-[14px] text-zinc-800 dark:text-white placeholder:text-zinc-400 outline-none"
-			onclick={handleOpenModelCard}
-			onkeydown={handleInputKeydown}
 			aria-describedby={showCross ? 'filter_minimal_input_model_clear_hint' : undefined}
 			aria-readonly="true"
 		/>
@@ -114,7 +84,6 @@
 						focus:bg-red-300/50 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-inset
 						cursor-pointer transition-colors duration-200"
 			onclick={handleClearModel}
-			onkeydown={handleClearKeydown}
 			aria-label="Clear selected model"
 			title="Clear selected model"
 		>

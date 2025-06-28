@@ -1,7 +1,7 @@
 <!-- components/BrandInput.svelte -->
 <script lang="ts">
 	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
-	import { filterState } from '$lib/components/filters/filterState.svelte';
+	import { brandInputSvelte } from './brandInput.svelte';
 
 	// Props
 	const { value = '', disabled = false, onOpen, onClear, onChange } = $props<{
@@ -13,7 +13,7 @@
 	}>();
 
 	// Derived values using runes
-	const displayValue = $derived(filterState.selectedBrand?.brand_name || value);
+	const displayValue = $derived(brandInputSvelte.selectedBrand?.brand_name || value);
 	const showCross = $derived(!!displayValue && !disabled);
 
 	// Event handlers

@@ -3,85 +3,71 @@
 	import ModelInput from './ModelInput.svelte';
 	import BrandCard from '../cards/BrandCard.svelte';
 	import ModelCard from '../cards/ModelCard.svelte';
-	import {
-		filterState,
-		filteredBrands,
-		filteredModels,
-		isModelDisabled,
-		loadBrands,
-		loadModels,
-		selectBrand,
-		selectModel,
-		clearBrand,
-		clearModel,
-		openBrandDropdown,
-		closeBrandDropdown,
-		openModelDropdown,
-		closeModelDropdown,
-		setBrandSearch,
-		setModelSearch
-	} from '../filterState.svelte';
+	import { brandInputSvelte } from './brandInput.svelte';
+	import { modelInputSvelte } from './modelInput.svelte';
+	import { brandCardSvelte, loadBrands, getFilteredBrands } from '../cards/brandCard.svelte';
+	import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
 	import type { Brand, Model } from '../types';
 
 	// Brand handlers
 	function handleBrandOpen() {
-		openBrandDropdown();
+		brandCardSvelte.isOpen = true;
 	}
 
 	async function handleBrandSelect(brand: Brand) {
-		await selectBrand(brand);
+		brandInputSvelte.selectedBrand = brand;
+		brandCardSvelte.isOpen = false;
+		
+		// Clear model when brand changes
+		if (modelInputSvelte.selectedModel) {
+			modelInputSvelte.selectedModel = null;
+		}
+		
+		// Reset model state
+		resetModelCard();
+		modelInputSvelte.disabled = false;
+		
+		// Load models for the selected brand
+		await loadModels(brand.id);
 	}
 
 	function handleBrandClear() {
-		clearBrand();
+		brandInputSvelte.selectedBrand = null;
+		modelInputSvelte.selectedModel = null;
+		modelInputSvelte.disabled = true;
+		resetModelCard();
 	}
 
 	function handleBrandClose() {
-		closeBrandDropdown();
+		brandCardSvelte.isOpen = false;
+		brandCardSvelte.searchText = '';
 	}
 
 	function handleBrandSearch(searchText: string) {
-		setBrandSearch(searchText);
+		brandCardSvelte.searchText = searchText;
 	}
 
 	async function handleBrandLoad() {
 		await loadBrands();
 	}
 
-	// Model handlers
-	function handleModelOpen() {
-		if (filterState.selectedBrand?.id) {
-			openModelDropdown();
-		}
-	}
-
 	function handleModelSelect(model: Model) {
-		selectModel(model);
+		modelInputSvelte.selectedModel = model;
+		modelCardState.isOpen = false;
 	}
 
 	function handleModelClear() {
-		clearModel();
+		modelInputSvelte.selectedModel = null;
 	}
 
 	function handleModelClose() {
-		closeModelDropdown();
+		modelCardState.isOpen = false;
+		modelCardState.searchText = '';
 	}
 
-	function handleModelSearch(searchText: string) {
-		setModelSearch(searchText);
-	}
-
-	async function handleModelLoad(brandId: number) {
-		await loadModels(brandId);
-	}
-
-	async function handleModelRetry(brandId: number) {
-		await loadModels(brandId);
-	}
-
-	// Load brand on component mount
+	// Load brands on component mount
 	$effect(() => {
-		if (filterState.brands.length === 0 && !filterState.brandLoading && !filterState.brandError) {
+		if (brandCardSvelte.brands.length === 0 && !brandCardSvelte.loading && !brandCardSvelte.error) {
 			loadBrands();
 		}
 	});
@@ -94,28 +80,27 @@
 >
 	<div class="w-full flex flex-row">
 		<BrandInput
-			value={filterState.selectedBrand?.value || ''}
+			value={brandInputSvelte.selectedBrand?.brand_name || ''}
 			onOpen={handleBrandOpen}
 			onClear={handleBrandClear}
 		/>
 
 		<ModelInput
-			value={filterState.selectedModel?.value || filterState.selectedModel?.model_name || ''}
-			disabled={isModelDisabled()}
-			onOpen={handleModelOpen}
-			onClear={handleModelClear}  
+			value={modelInputSvelte.selectedModel?.model_name || ''}
+			disabled={modelInputSvelte.disabled}
+			onClear={handleModelClear}
 		/>
 	</div>
 </div>
 
 <!-- Modal Cards -->
 <BrandCard
-	isOpen={filterState.isBrandDropdownOpen}
-	brands={filterState.brands}
-	searchText={filterState.brandSearchText}
-	loading={filterState.brandLoading}
-	error={filterState.brandError}
-	filteredBrands={filteredBrands()}
+	isOpen={brandCardSvelte.isOpen}
+	brands={brandCardSvelte.brands}
+	searchText={brandCardSvelte.searchText}
+	loading={brandCardSvelte.loading}
+	error={brandCardSvelte.error}
+	filteredBrands={getFilteredBrands()}
 	onSelect={handleBrandSelect}
 	onClose={handleBrandClose}
 	onSearch={handleBrandSearch}
@@ -123,16 +108,8 @@
 />
 
 <ModelCard
-	isOpen={filterState.isModelDropdownOpen}
-	models={filterState.models}
-	searchText={filterState.modelSearchText}
-	loading={filterState.modelLoading}
-	error={filterState.modelError}
-	filteredModels={filteredModels()}
-	brandId={filterState.selectedBrand?.id}
+	isOpen={modelCardState.isOpen}
+	brandId={brandInputSvelte.selectedBrand?.id}
 	onSelect={handleModelSelect}
 	onClose={handleModelClose}
-	onSearch={handleModelSearch}
-	onLoad={handleModelLoad}
-	onRetry={handleModelRetry}
 />
