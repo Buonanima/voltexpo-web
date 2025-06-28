@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	import type { PageData } from './$types';
 	import PostCard from '$lib/components/postsList/PostCard.svelte';
 	import CarsEmptyState from '$lib/components/postsList/CarsEmptyState.svelte';
@@ -8,6 +9,9 @@
 	import SearchFilterButtons from '$lib/components/filters/SearchPage/SearchFilterButtons.svelte';
 	import { carsActions, likedCars } from '../store/posts';
 	import Header from './components/Header.svelte';
+	import { fetchPostList } from '$lib/api/post/fetchPostList/fetchPostList';
+	import { OrderDirection, OrderField, OrderingHelpers } from '$lib/api/post/fetchPostList/orderingHelpers';
+	import type { FilterParams } from '$lib/api/post/fetchPostList/types';
 
 	const { data }: { data: PageData } = $props();
 
@@ -16,13 +20,55 @@
 		isAuthenticated: false,
 		createNewPostUrl: '/create-post',
 		logInUrl: '/login',
-		showMoreFilters: false
+		showMoreFilters: false,
+		searchResults: data.searchResults,
+		isLoading: false
 	});
 
+	// Bind to SearchFilter component
+	let searchFilterComponent: SearchFilter;
+
+	// Current filter state
+	let currentFilters: FilterParams = $state({});
+
 	// Filter handlers
-	function handleSearch() {
-		// TODO: Implement search functionality
-		console.log('Search clicked');
+	async function handleSearch() {
+		if (!searchFilterComponent) return;
+		
+		pageState.isLoading = true;
+		
+		try {
+			// Get current filters from SearchFilter component
+			const filters = searchFilterComponent.getCurrentFilters();
+			
+			// Fetch new results
+			const results = await fetchPostList({
+				filters,
+				ordering: OrderingHelpers.byFieldAndDirection(OrderField.TIME_POSTED, OrderDirection.DESC)
+			});
+			
+			// Update page state
+			pageState.searchResults = results;
+			
+			// Generate URL search params and navigate
+			const searchParams = searchFilterComponent.generateUrlSearchParams();
+			const newUrl = `/electric-cars${ searchParams.toString() ? '?' + searchParams.toString() : '' }`;
+			
+			// Update URL without full page reload
+			await goto(newUrl, { replaceState: false, noScroll: true });
+			
+		} catch (error) {
+			console.error('Search failed:', error);
+			// You might want to show an error message to the user
+		} finally {
+			pageState.isLoading = false;
+		}
+	}
+
+	// Handle filter changes (optional - for real-time updates)
+	function handleFiltersChange(filters: FilterParams) {
+		currentFilters = filters;
+		// Could implement auto-search here if desired
 	}
 
 	function handleToggleMoreFilters() {
@@ -38,7 +84,7 @@
 	}
 
 	// Derived values using Svelte 5 runes
-	const searchResultsWithLikeState = $derived(enrichCarsWithLikeState(data.searchResults));
+	const searchResultsWithLikeState = $derived(enrichCarsWithLikeState(pageState.searchResults));
 
 	// Computed values for section visibility
 	const hasResults = $derived(searchResultsWithLikeState.length > 0);
@@ -56,6 +102,42 @@
 			return 'Electric Cars Search';
 		}
 	});
+
+	// Initialize filters from URL on mount
+	if (browser) {
+		// This will run after component mounts
+		$effect(() => {
+			if (searchFilterComponent) {
+				const urlParams = new URLSearchParams(window.location.search);
+				searchFilterComponent.initializeFromUrlParams(urlParams);
+			}
+		});
+	} else {
+		// For SSR, we can use the data from the server
+		$effect(() => {
+			if (searchFilterComponent && data.allFilters) {
+				// Convert server filters back to URL params for initialization
+				const params = new URLSearchParams();
+				const filters = data.allFilters;
+				
+				if (filters.brand?.slug) params.set('brand', filters.brand.slug);
+				if (filters.model?.slug) params.set('model', filters.model.slug);
+				if (filters.year?.from) params.set('yearFrom', filters.year.from);
+				if (filters.year?.to) params.set('yearTo', filters.year.to);
+				if (filters.price?.from) params.set('priceFrom', filters.price.from);
+				if (filters.price?.to) params.set('priceTo', filters.price.to);
+				if (filters.range?.from) params.set('rangeFrom', filters.range.from);
+				if (filters.range?.to) params.set('rangeTo', filters.range.to);
+				if (filters.km?.from) params.set('kmFrom', filters.km.from);
+				if (filters.km?.to) params.set('kmTo', filters.km.to);
+				if (filters.power?.from) params.set('powerFrom', filters.power.from);
+				if (filters.power?.to) params.set('powerTo', filters.power.to);
+				if (filters.bodyType?.slug) params.set('bodyType', filters.bodyType.slug);
+				
+				searchFilterComponent.initializeFromUrlParams(params);
+			}
+		});
+	}
 </script>
 
 <svelte:head>
@@ -73,7 +155,11 @@
 <Header/>
 
 <div class="filter-container">
-	<SearchFilter showMoreFilters={pageState.showMoreFilters} />
+	<SearchFilter 
+		bind:this={searchFilterComponent}
+		showMoreFilters={pageState.showMoreFilters} 
+		onFiltersChange={handleFiltersChange}
+	/>
 	<SearchFilterButtons 
 		onSearch={handleSearch}
 		onToggleMoreFilters={handleToggleMoreFilters}

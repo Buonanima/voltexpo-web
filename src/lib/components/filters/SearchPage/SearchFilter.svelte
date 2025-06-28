@@ -1,4 +1,3 @@
-<!-- components/filters/SearchPage/SearchFilter.svelte -->
 <script lang="ts">
 	import BrandInput from '../FilterHome/inputs/BrandInput.svelte';
 	import ModelInput from '../FilterHome/inputs/ModelInput.svelte';
@@ -14,103 +13,55 @@
 	import { brandInputSvelte } from '../FilterHome/inputs/brandInput.svelte.js';
 	import { modelInputSvelte } from '../FilterHome/inputs/modelInput.svelte.js';
 	import { brandCardSvelte } from '../cards/brandCard.svelte.js';
-	import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
+	import { modelCardState } from '../cards/modelCard.svelte';
 	import { yearInputSvelte } from './inputs/yearInput.svelte.js';
 	import { priceInputSvelte } from './inputs/priceInput.svelte.js';
 	import { bodyTypeInputSvelte } from './inputs/bodyTypeInput.svelte.js';
 	import { rangeInputSvelte } from './inputs/rangeInput.svelte.js';
 	import { kmInputSvelte } from './inputs/kmInput.svelte.js';
 	import { powerInputSvelte } from './inputs/powerInput.svelte.js';
+
+	// Import extracted logic modules
+	import { searchFilterHandlers } from './searchFilterHandlers.svelte';
+	import { searchFilterState } from './searchFilterState.svelte';
+	import { searchFilterUrlParams } from './searchFilterUrlParams.svelte';
 	
-	import type { Brand, Model } from '../types';
+	import type { FilterParams } from '$lib/api/post/fetchPostList/types';
 
 	// Props
-	const { showMoreFilters = false } = $props<{
+	const { 
+		showMoreFilters = false,
+		onFiltersChange
+	} = $props<{
 		showMoreFilters?: boolean;
+		onFiltersChange?: (filters: FilterParams) => void;
 	}>();
 
-	// Brand handlers
-	function handleBrandOpen() {
-		brandCardSvelte.isOpen = true;
-	}
+	// Get current filters from state module
+	const currentFilters = $derived(searchFilterState.currentFilters);
 
-	async function handleBrandSelect(brand: Brand) {
-		brandInputSvelte.selectedBrand = brand;
-		brandCardSvelte.isOpen = false;
-		
-		// Clear model when brand changes
-		if (modelInputSvelte.selectedModel) {
-			modelInputSvelte.selectedModel = null;
+	// Notify parent when filters change
+	$effect(() => {
+		if (onFiltersChange) {
+			onFiltersChange(currentFilters);
 		}
-		
-		// Reset model state
-		resetModelCard();
-		modelInputSvelte.disabled = false;
-		
-		// Load models for the selected brand
-		await loadModels(brand.id);
+	});
+
+	// Public methods for parent components
+	export function getCurrentFilters(): FilterParams {
+		return currentFilters;
 	}
 
-	function handleBrandClear() {
-		brandInputSvelte.selectedBrand = null;
-		modelInputSvelte.selectedModel = null;
-		modelInputSvelte.disabled = true;
-		resetModelCard();
+	export function resetAllFilters(): void {
+		searchFilterHandlers.resetAllFilters();
 	}
 
-	function handleBrandClose() {
-		brandCardSvelte.isOpen = false;
-		brandCardSvelte.searchText = '';
+	export function initializeFromUrlParams(searchParams: URLSearchParams): void {
+		searchFilterUrlParams.initializeFromUrlParams(searchParams);
 	}
 
-	function handleModelSelect(model: Model) {
-		modelInputSvelte.selectedModel = model;
-		modelCardState.isOpen = false;
-	}
-
-	function handleModelClear() {
-		modelInputSvelte.selectedModel = null;
-	}
-
-	function handleModelClose() {
-		modelCardState.isOpen = false;
-		modelCardState.searchText = '';
-	}
-
-	// Other filter handlers (can be expanded later)
-	function handleYearChange(from: number | null, to: number | null) {
-		// Handle year filter change
-		console.log('Year changed:', { from, to });
-	}
-
-	function handlePriceChange(from: number | null, to: number | null) {
-		// Handle price filter change
-		console.log('Price changed:', { from, to });
-	}
-
-	function handleBodyTypeOpen() {
-		// Handle body type selection
-		console.log('Body type opened');
-	}
-
-	function handleBodyTypeChange(value: string | null) {
-		// Handle body type change
-		console.log('Body type changed:', value);
-	}
-
-	function handleRangeChange(from: number | null, to: number | null) {
-		// Handle range filter change
-		console.log('Range changed:', { from, to });
-	}
-
-	function handleKmChange(from: number | null, to: number | null) {
-		// Handle km filter change
-		console.log('Km changed:', { from, to });
-	}
-
-	function handlePowerChange(from: number | null, to: number | null) {
-		// Handle power filter change
-		console.log('Power changed:', { from, to });
+	export function generateUrlSearchParams(): URLSearchParams {
+		return searchFilterUrlParams.generateUrlSearchParams();
 	}
 </script>
 
@@ -121,36 +72,36 @@
 		<BrandInput
 			value={brandInputSvelte.selectedBrand?.brand_name || ''}
 			variant="search"
-			onOpen={handleBrandOpen}
-			onClear={handleBrandClear}
+			onOpen={searchFilterHandlers.handleBrandOpen}
+			onClear={searchFilterHandlers.handleBrandClear}
 		/>
 
 		<ModelInput
 			value={modelInputSvelte.selectedModel?.model_name || ''}
 			disabled={modelInputSvelte.disabled}
 			variant="search"
-			onClear={handleModelClear}
+			onClear={searchFilterHandlers.handleModelClear}
 		/>
 
 		<YearInput
 			onClear={() => yearInputSvelte.reset()}
-			onChange={handleYearChange}
+			onChange={searchFilterHandlers.handleYearChange}
 		/>
 
 		<PriceInput
 			onClear={() => priceInputSvelte.reset()}
-			onChange={handlePriceChange}
+			onChange={searchFilterHandlers.handlePriceChange}
 		/>
 
 		<RangeInput
 			onClear={() => rangeInputSvelte.reset()}
-			onChange={handleRangeChange}
+			onChange={searchFilterHandlers.handleRangeChange}
 		/>
 
 		<BodyTypeInput
-			onOpen={handleBodyTypeOpen}
+			onOpen={searchFilterHandlers.handleBodyTypeOpen}
 			onClear={() => bodyTypeInputSvelte.reset()}
-			onChange={handleBodyTypeChange}
+			onChange={searchFilterHandlers.handleBodyTypeChange}
 		/>
 	</div>
 
@@ -160,12 +111,12 @@
 			<div class="w-full grid grid-cols-2 rounded-[20px]">
 				<KmInput
 					onClear={() => kmInputSvelte.reset()}
-					onChange={handleKmChange}
+					onChange={searchFilterHandlers.handleKmChange}
 				/>
 
 				<PowerInput
 					onClear={() => powerInputSvelte.reset()}
-					onChange={handlePowerChange}
+					onChange={searchFilterHandlers.handlePowerChange}
 				/>
 			</div>
 		</div>
@@ -175,13 +126,13 @@
 <!-- Modal Cards -->
 <BrandCard
 	isOpen={brandCardSvelte.isOpen}
-	onSelect={handleBrandSelect}
-	onClose={handleBrandClose}
+	onSelect={searchFilterHandlers.handleBrandSelect}
+	onClose={searchFilterHandlers.handleBrandClose}
 />
 
 <ModelCard
 	isOpen={modelCardState.isOpen}
 	brandId={brandInputSvelte.selectedBrand?.id}
-	onSelect={handleModelSelect}
-	onClose={handleModelClose}
+	onSelect={searchFilterHandlers.handleModelSelect}
+	onClose={searchFilterHandlers.handleModelClose}
 />
