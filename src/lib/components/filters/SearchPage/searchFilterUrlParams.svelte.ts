@@ -6,6 +6,7 @@ import { bodyTypeInputSvelte } from './inputs/bodyTypeInput.svelte.js';
 import { rangeInputSvelte } from './inputs/rangeInput.svelte.js';
 import { kmInputSvelte } from './inputs/kmInput.svelte.js';
 import { powerInputSvelte } from './inputs/powerInput.svelte.js';
+import { getBodyTypes } from '../cards/bodyTypeCard.svelte.js';
 
 export class SearchFilterUrlParams {
 	initializeFromUrlParams(searchParams: URLSearchParams): void {
@@ -56,7 +57,10 @@ export class SearchFilterUrlParams {
 		// Initialize body type
 		const bodyTypeParam = searchParams.get('bodyType');
 		if (bodyTypeParam) {
-			bodyTypeInputSvelte.selectedBodyType = bodyTypeParam;
+			const bodyType = getBodyTypes().find(bt => bt.value === bodyTypeParam || bt.slug === bodyTypeParam);
+			if (bodyType) {
+				bodyTypeInputSvelte.selectedBodyType = bodyType;
+			}
 		}
 	}
 
@@ -89,7 +93,7 @@ export class SearchFilterUrlParams {
 
 		// Add body type
 		if (bodyTypeInputSvelte.selectedBodyType) {
-			params.set('bodyType', bodyTypeInputSvelte.selectedBodyType);
+			params.set('bodyType', bodyTypeInputSvelte.selectedBodyType.slug);
 		}
 
 		return params;

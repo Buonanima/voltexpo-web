@@ -1,8 +1,6 @@
 <!-- components/filters/SearchPage/BodyTypeInput.svelte -->
 <script lang="ts">
 	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
-	import BodyTypeCard from '$lib/components/filters/cards/BodyTypeCard.svelte';
-	import type { BodyType } from '$lib/components/filters/cards/bodyTypeCard.svelte.js';
 	import { bodyTypeInputSvelte } from './bodyTypeInput.svelte.js';
 
 	// Props
@@ -13,29 +11,17 @@
 		onChange?: (value: string | null) => void;
 	}>();
 
-	// Local state for card visibility
-	let isCardOpen = $state(false);
 
 	// Derived values using runes
-	const displayValue = $derived(bodyTypeInputSvelte.selectedBodyType || '');
+	const displayValue = $derived(bodyTypeInputSvelte.displayValue);
 	const showCross = $derived(!!displayValue && !disabled);
 
 	// Event handlers
 	function handleOpenBodyTypeCard(): void {
 		if (disabled) return;
-		isCardOpen = true;
 		onOpen?.();
 	}
 
-	function handleCloseBodyTypeCard(): void {
-		isCardOpen = false;
-	}
-
-	function handleSelectBodyType(bodyType: BodyType): void {
-		bodyTypeInputSvelte.selectedBodyType = bodyType.value;
-		isCardOpen = false;
-		onChange?.(bodyType.value);
-	}
 
 	function handleClearBodyType(event: Event): void {
 		if (disabled) return;
@@ -118,12 +104,6 @@
 	{/if}
 </div>
 
-<!-- Body Type Card -->
-<BodyTypeCard
-	isOpen={isCardOpen}
-	onSelect={handleSelectBodyType}
-	onClose={handleCloseBodyTypeCard}
-/>
 
 <style>
 	.sr-only {

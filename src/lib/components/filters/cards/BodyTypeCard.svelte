@@ -45,7 +45,7 @@
 		'hatchback': Hatchback,
 		'coupe': Coupe,
 		'cabriolet': Cabriolet,
-		'passenger_transport': PassengerTransport
+		'passenger-transport': PassengerTransport
 	};
 </script>
 

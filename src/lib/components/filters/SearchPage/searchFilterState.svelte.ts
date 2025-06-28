@@ -58,8 +58,7 @@ export class SearchFilterState {
 		// Body type filter
 		if (bodyTypeInputSvelte.selectedBodyType) {
 			filters.bodyType = {
-				value: bodyTypeInputSvelte.selectedBodyType,
-				slug: bodyTypeInputSvelte.selectedBodyType
+				slug: bodyTypeInputSvelte.selectedBodyType.slug
 			};
 		}
 

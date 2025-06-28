@@ -1,8 +1,10 @@
 import type { Brand, Model } from '../types';
+import type { BodyType } from '../cards/bodyTypeCard.svelte.js';
 import { brandInputSvelte } from '../FilterHome/inputs/brandInput.svelte.js';
 import { modelInputSvelte } from '../FilterHome/inputs/modelInput.svelte.js';
 import { brandCardSvelte } from '../cards/brandCard.svelte.js';
 import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
+import { bodyTypeCardSvelte } from '../cards/bodyTypeCard.svelte.js';
 import { yearInputSvelte } from './inputs/yearInput.svelte.js';
 import { priceInputSvelte } from './inputs/priceInput.svelte.js';
 import { bodyTypeInputSvelte } from './inputs/bodyTypeInput.svelte.js';
@@ -72,8 +74,16 @@ export class SearchFilterHandlers {
 	}
 
 	handleBodyTypeOpen() {
-		// Handle body type selection
-		console.log('Body type opened');
+		bodyTypeCardSvelte.isOpen = true;
+	}
+
+	handleBodyTypeSelect(bodyType: BodyType) {
+		bodyTypeInputSvelte.selectedBodyType = bodyType;
+		bodyTypeCardSvelte.isOpen = false;
+	}
+
+	handleBodyTypeClose() {
+		bodyTypeCardSvelte.isOpen = false;
 	}
 
 	handleBodyTypeChange(value: string | null) {

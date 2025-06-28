@@ -1,7 +1,8 @@
 // State for BodyTypeInput component using Svelte 5 runes
+import type { BodyType } from '../../cards/bodyTypeCard.svelte.js';
 
 class BodyTypeInputState {
-	selectedBodyType = $state<string | null>(null);
+	selectedBodyType = $state<BodyType | null>(null);
 
 	// Reset all values
 	reset() {
@@ -10,12 +11,17 @@ class BodyTypeInputState {
 
 	// Get current value
 	get value() {
-		return this.selectedBodyType;
+		return this.selectedBodyType?.value || null;
 	}
 
 	// Check if any value is set
 	get hasValue() {
 		return this.selectedBodyType !== null;
+	}
+
+	// Get display value
+	get displayValue() {
+		return this.selectedBodyType?.value || '';
 	}
 }
 

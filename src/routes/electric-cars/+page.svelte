@@ -47,8 +47,8 @@
 				ordering: OrderingHelpers.byFieldAndDirection(OrderField.TIME_POSTED, OrderDirection.DESC)
 			});
 			
-			// Update page state
-			pageState.searchResults = results;
+			// Update page state - ensure results is always an array
+			pageState.searchResults = results || [];
 			
 			// Generate URL search params and navigate
 			const searchParams = searchFilterComponent.generateUrlSearchParams();

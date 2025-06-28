@@ -39,7 +39,9 @@ export async function fetchPostList(options: FetchPostListOptions = {}): Promise
 			throw error(response.status, `Failed to fetch cars: ${response.statusText}`);
 		}
 
-		return await response.json();
+		const result = await response.json();
+		// Handle null response from server (no results found)
+		return result || [];
 	} catch (err) {
 		console.error('Error fetching cars:', err);
 

@@ -9,11 +9,13 @@
 	import PowerInput from './inputs/PowerInput.svelte';
 	import BrandCard from '../cards/BrandCard.svelte';
 	import ModelCard from '../cards/ModelCard.svelte';
+	import BodyTypeCard from '../cards/BodyTypeCard.svelte';
 	
 	import { brandInputSvelte } from '../FilterHome/inputs/brandInput.svelte.js';
 	import { modelInputSvelte } from '../FilterHome/inputs/modelInput.svelte.js';
 	import { brandCardSvelte } from '../cards/brandCard.svelte.js';
 	import { modelCardState } from '../cards/modelCard.svelte';
+	import { bodyTypeCardSvelte } from '../cards/bodyTypeCard.svelte.js';
 	import { yearInputSvelte } from './inputs/yearInput.svelte.js';
 	import { priceInputSvelte } from './inputs/priceInput.svelte.js';
 	import { bodyTypeInputSvelte } from './inputs/bodyTypeInput.svelte.js';
@@ -135,4 +137,10 @@
 	brandId={brandInputSvelte.selectedBrand?.id}
 	onSelect={searchFilterHandlers.handleModelSelect}
 	onClose={searchFilterHandlers.handleModelClose}
+/>
+
+<BodyTypeCard
+	isOpen={bodyTypeCardSvelte.isOpen}
+	onSelect={searchFilterHandlers.handleBodyTypeSelect}
+	onClose={searchFilterHandlers.handleBodyTypeClose}
 />

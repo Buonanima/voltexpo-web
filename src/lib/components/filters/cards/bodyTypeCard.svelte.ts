@@ -2,20 +2,19 @@
 
 export interface BodyType {
 	id: number;
-	name: string;
 	value: string;
 	slug: string;
 }
 
 // Static body type data based on available icons
 const BODY_TYPES: BodyType[] = [
-	{ id: 1, name: 'Break', value: 'Break', slug: 'break' },
-	{ id: 2, name: 'SUV', value: 'SUV', slug: 'suv' },
-	{ id: 3, name: 'Sedan', value: 'Sedan', slug: 'sedan' },
-	{ id: 4, name: 'Hatchback', value: 'Hatchback', slug: 'hatchback' },
-	{ id: 5, name: 'Coupe', value: 'Coupe', slug: 'coupe' },
-	{ id: 6, name: 'Cabriolet', value: 'Cabriolet', slug: 'cabriolet' },
-	{ id: 7, name: 'Passenger Transport', value: 'Passenger Transport', slug: 'passenger-transport' }
+	{ id: 1, value: 'Break', slug: 'break' },
+	{ id: 2, value: 'SUV', slug: 'suv' },
+	{ id: 3, value: 'Sedan', slug: 'sedan' },
+	{ id: 4, value: 'Hatchback', slug: 'hatchback' },
+	{ id: 5, value: 'Coupe', slug: 'coupe' },
+	{ id: 6, value: 'Cabriolet', slug: 'cabriolet' },
+	{ id: 7, value: 'Passenger Transport', slug: 'passenger-transport' }
 ];
 
 export const bodyTypeCardSvelte = $state<{
