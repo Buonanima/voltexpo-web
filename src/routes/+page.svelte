@@ -9,6 +9,7 @@
 	import FireIcon from '$lib/components/shared/icons/FireIcon.svelte';
 	import ClockIcon from '$lib/components/shared/icons/ClockIcon.svelte';
 	import FilterHome from '$lib/components/filters/FilterHome/FilterHome.svelte';
+import HomepageFilterButtons from '$lib/components/filters/HomepageFilterButtons.svelte';
 	import { carsActions, likedCars } from './store/posts';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
 
@@ -58,6 +59,7 @@
 
 <div class="filter-container">
 	<FilterHome />
+	<HomepageFilterButtons />
 </div>
 
 <div class="container">
