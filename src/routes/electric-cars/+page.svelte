@@ -4,8 +4,10 @@
 	import PostCard from '$lib/components/postsList/PostCard.svelte';
 	import CarsEmptyState from '$lib/components/postsList/CarsEmptyState.svelte';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
-	import FilterHome from '$lib/components/filters/FilterHome/FilterHome.svelte';
+	import SearchFilter from '$lib/components/filters/SearchPage/SearchFilter.svelte';
+	import SearchFilterButtons from '$lib/components/filters/SearchPage/SearchFilterButtons.svelte';
 	import { carsActions, likedCars } from '../store/posts';
+	import Header from './components/Header.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -13,8 +15,19 @@
 		currentNavbarTab: 'search',
 		isAuthenticated: false,
 		createNewPostUrl: '/create-post',
-		logInUrl: '/login'
+		logInUrl: '/login',
+		showMoreFilters: false
 	});
+
+	// Filter handlers
+	function handleSearch() {
+		// TODO: Implement search functionality
+		console.log('Search clicked');
+	}
+
+	function handleToggleMoreFilters() {
+		pageState.showMoreFilters = !pageState.showMoreFilters;
+	}
 
 	// Helper function to enrich cars with like state
 	function enrichCarsWithLikeState(cars: typeof data.searchResults) {
@@ -57,8 +70,15 @@
 	logInUrl={pageState.logInUrl}
 />
 
+<Header/>
+
 <div class="filter-container">
-	<FilterHome />
+	<SearchFilter showMoreFilters={pageState.showMoreFilters} />
+	<SearchFilterButtons 
+		onSearch={handleSearch}
+		onToggleMoreFilters={handleToggleMoreFilters}
+		showMoreFilters={pageState.showMoreFilters}
+	/>
 </div>
 
 <div class="container">
@@ -98,13 +118,13 @@
 
 <style>
     .container {
-        max-width: 1200px;
+        max-width: 1100px;
         margin: 0 auto;
         padding: 2rem 15px;
     }
 
     .filter-container {
-        max-width: 1200px;
+        max-width: 1100px;
         margin: 0 auto;
         padding: 0 15px 2rem;
     }

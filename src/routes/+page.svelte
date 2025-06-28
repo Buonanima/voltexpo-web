@@ -9,7 +9,7 @@
 	import FireIcon from '$lib/components/shared/icons/FireIcon.svelte';
 	import ClockIcon from '$lib/components/shared/icons/ClockIcon.svelte';
 	import FilterHome from '$lib/components/filters/FilterHome/FilterHome.svelte';
-import HomepageFilterButtons from '$lib/components/filters/HomepageFilterButtons.svelte';
+import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFilterButtons.svelte';
 	import { carsActions, likedCars } from './store/posts';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
 
@@ -108,13 +108,13 @@ import HomepageFilterButtons from '$lib/components/filters/HomepageFilterButtons
 
 <style>
     .container {
-        max-width: 1200px;
+        max-width: 1100px;
         margin: 0 auto;
         padding: 2rem 15px;
     }
 
     .filter-container {
-        max-width: 1200px;
+        max-width: 1100px;
         margin: 0 auto;
         padding: 0 15px 2rem;
     }

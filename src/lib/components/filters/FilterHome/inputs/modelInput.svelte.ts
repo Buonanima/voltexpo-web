@@ -1,4 +1,4 @@
-import type { Model } from '../types';
+import type { Model } from '../../types';
 
 export const modelInputSvelte = $state<{
 	selectedModel: Model | null;

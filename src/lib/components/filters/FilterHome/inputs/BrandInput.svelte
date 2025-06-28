@@ -1,12 +1,13 @@
 <!-- components/BrandInput.svelte -->
 <script lang="ts">
 	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
-	import { brandInputSvelte } from './brandInput.svelte';
+	import { brandInputSvelte } from './brandInput.svelte.js';
 
 	// Props
-	const { value = '', disabled = false, onOpen, onClear, onChange } = $props<{
+	const { value = '', disabled = false, variant = 'home', onOpen, onClear, onChange } = $props<{
 		value?: string;
 		disabled?: boolean;
+		variant?: 'home' | 'search';
 		onOpen?: () => void;
 		onClear?: () => void;
 		onChange?: (value: string | null) => void;
@@ -42,9 +43,10 @@
 
 <div
 	id="filter_minimal_input_container_brand"
-	class="bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-l-[16px] w-full flex
-		cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-500
-		transition-colors duration-200"
+	class="{variant === 'home' 
+		? 'w-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded-l-[16px] hover:border-zinc-400 dark:hover:border-zinc-500'
+		: 'flex flex-row flex-nowrap border-[1px] border-zinc-200 dark:border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 z-0 hover:z-[1] mb-[-1px] transition-[border-color] duration-150 overflow-hidden hover:cursor-pointer rounded-tl-[20px]'}
+	mr-[-1px] flex cursor-pointer transition-colors duration-200"
 	role="button"
 	tabindex={disabled ? -1 : 0}
 	aria-haspopup="dialog"
@@ -55,7 +57,9 @@
 	<div class="flex-1 pl-[15px] pr-[10px] py-[8px]">
 		<label
 			for="filter_minimal_input_brand"
-			class="block text-[15px] max-[750px]:text-[14px] text-zinc-600 dark:text-zinc-300
+			class="{variant === 'home' 
+				? 'block text-[15px] max-[750px]:text-[14px] text-zinc-600 dark:text-zinc-300' 
+				: 'block text-[15px] max-[750px]:text-[14px] text-zinc-800 dark:text-white hover:cursor-pointer'}
 				{disabled ? 'cursor-not-allowed' : 'cursor-pointer'}"
 		>
 			Brand

@@ -1,47 +1,47 @@
+<!-- components/filters/SearchPage/SearchFilterButtons.svelte -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { brandInputSvelte } from './FilterHome/brandInput.svelte';
-	import { modelInputSvelte } from './FilterHome/modelInput.svelte';
+	import ChevronDown from '$lib/components/shared/icons/ChevronDown.svelte';
+
+	// Props
+	const { onSearch, onToggleMoreFilters, showMoreFilters = false } = $props<{
+		onSearch?: () => void;
+		onToggleMoreFilters?: () => void;
+		showMoreFilters?: boolean;
+	}>();
 
 	function handleSearch() {
-		const params = new URLSearchParams();
-		
-		if (brandInputSvelte.selectedBrand) {
-			params.set('brand', brandInputSvelte.selectedBrand.brand_name);
-		}
-		
-		if (modelInputSvelte.selectedModel) {
-			params.set('model', modelInputSvelte.selectedModel.model_name);
-		}
-		
-		const queryString = params.toString();
-		const url = queryString ? `/electric-cars?${queryString}` : '/electric-cars';
-		
-		goto(url);
+		onSearch?.();
+	}
+
+	function handleToggleMoreFilters() {
+		onToggleMoreFilters?.();
 	}
 </script>
 
-<div class='w-full max-[750px]:px-[15px]'>
+<div class='w-full max-[750px]:px-[15px] pb-[15px]'>
     <div class='flex flex-row
               grid grid-cols-3
               max-[750px]:grid-cols-2
               rounded-[15px]'>
 
-        <button onclick={handleSearch}>
-            <div id='advanced_search_button' class='
+        <button onclick={handleToggleMoreFilters}>
+            <div id='more_filters_button' class='
              w-full mr-[-1px] h-[44px]
-             flex justify-center items-center gap-[10px]
+             flex justify-center items-center gap-[15px]
              text-[15px] max-[750px]:text-[14px]
              text-zinc-800 hover:text-zinc-900
              dark:text-zinc-100 dark:hover:text-white
-             max-[750px]:border-r-[0px]
              bg-zinc-100 hover:bg-zinc-200
              dark:bg-zinc-900 dark:hover:bg-zinc-850
              rounded-full max-[750px]:rounded-r-none
              hover:cursor-pointer
              transition-all
              duration-150'>
-                <span id="advanced_search_button_text">Advanced Search</span>
+                <span id="more_filters_button_text">{showMoreFilters ? 'Less filters' : 'More filters'}</span>
+                <div class="{showMoreFilters ? 'rotate-180' : ''} transition-all duration-300">
+                    <ChevronDown />
+                </div>
             </div>
         </button>
 

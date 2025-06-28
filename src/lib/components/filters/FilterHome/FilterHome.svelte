@@ -1,10 +1,10 @@
 <script lang="ts">
-	import BrandInput from './BrandInput.svelte';
-	import ModelInput from './ModelInput.svelte';
+	import BrandInput from './inputs/BrandInput.svelte';
+	import ModelInput from './inputs/ModelInput.svelte';
 	import BrandCard from '../cards/BrandCard.svelte';
 	import ModelCard from '../cards/ModelCard.svelte';
-	import { brandInputSvelte } from './brandInput.svelte';
-	import { modelInputSvelte } from './modelInput.svelte';
+	import { brandInputSvelte } from './inputs/brandInput.svelte.js';
+	import { modelInputSvelte } from './inputs/modelInput.svelte.js';
 	import { brandCardSvelte } from '../cards/brandCard.svelte.js';
 	import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
 	import type { Brand, Model } from '../types';
@@ -67,6 +67,7 @@
 	<div class="w-full flex flex-row">
 		<BrandInput
 			value={brandInputSvelte.selectedBrand?.brand_name || ''}
+			variant="home"
 			onOpen={handleBrandOpen}
 			onClear={handleBrandClear}
 		/>
@@ -74,6 +75,7 @@
 		<ModelInput
 			value={modelInputSvelte.selectedModel?.model_name || ''}
 			disabled={modelInputSvelte.disabled}
+			variant="home"
 			onClear={handleModelClear}
 		/>
 	</div>
