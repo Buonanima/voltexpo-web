@@ -8,16 +8,49 @@ import { powerInputSvelte } from './inputs/powerInput.svelte.js';
 import { getBodyTypes } from '../cards/bodyTypeCard.svelte.js';
 import { getBrandBySlug } from '$lib/api/brand/getBrandBySlug';
 import { getModelBySlug } from '$lib/api/model/getModelBySlug';
+import { 
+	getStringParam, 
+	getIntParam, 
+	setBrandParam, 
+	setModelParam, 
+	setBodyTypeParam,
+	setRangeParams, 
+	extractFilterParams 
+} from '../shared/urlParamUtils';
 
+/**
+ * Handles URL parameter synchronization for search filters.
+ * Manages both initialization from URL and generation of URL parameters from current filter state.
+ */
 export class SearchFilterUrlParams {
+	/**
+	 * Initializes filter states from URL search parameters.
+	 * Loads brand/model data from API and sets all filter values from URL.
+	 * @param searchParams - The URLSearchParams object to extract filter values from
+	 */
 	async initializeFromUrlParams(searchParams: URLSearchParams): Promise<void> {
-		// Initialize brand
-		const brandParam = searchParams.get('brand');
-		if (brandParam) {
+		const filterParams = extractFilterParams(searchParams);
+
+		// Initialize brand first
+		if (filterParams.brand) {
 			try {
-				const { data: brand, error } = await getBrandBySlug(brandParam);
+				const { data: brand, error } = await getBrandBySlug(filterParams.brand);
 				if (brand && !error) {
 					searchFilterUtils.setBrand(brand);
+					
+					// Now that brand is set, initialize model if present
+					if (filterParams.model) {
+						try {
+							const { data: model, error: modelError } = await getModelBySlug(filterParams.model);
+							if (model && !modelError && model.brand_id === brand.id) {
+								searchFilterUtils.setModel(model);
+							} else if (modelError) {
+								console.warn('Failed to load model from URL:', modelError);
+							}
+						} catch (error) {
+							console.warn('Error loading model from URL:', error);
+						}
+					}
 				} else if (error) {
 					console.warn('Failed to load brand from URL:', error);
 				}
@@ -26,92 +59,52 @@ export class SearchFilterUrlParams {
 			}
 		}
 
-		// Initialize model 
-		const modelParam = searchParams.get('model');
-		if (modelParam && searchBrandState.selectedBrand) {
-			try {
-				const { data: model, error } = await getModelBySlug(modelParam);
-				if (model && !error) {
-					searchFilterUtils.setModel(model);
-				} else if (error) {
-					console.warn('Failed to load model from URL:', error);
-				}
-			} catch (error) {
-				console.warn('Error loading model from URL:', error);
-			}
-		}
+		// Initialize range filters using extracted values
+		if (filterParams.year.from) yearInputSvelte.fromYear = filterParams.year.from;
+		if (filterParams.year.to) yearInputSvelte.toYear = filterParams.year.to;
 
-		// Initialize year
-		const yearFrom = searchParams.get('yearFrom');
-		const yearTo = searchParams.get('yearTo');
-		if (yearFrom) yearInputSvelte.fromYear = parseInt(yearFrom);
-		if (yearTo) yearInputSvelte.toYear = parseInt(yearTo);
+		if (filterParams.price.from) priceInputSvelte.fromPrice = filterParams.price.from;
+		if (filterParams.price.to) priceInputSvelte.toPrice = filterParams.price.to;
 
-		// Initialize price
-		const priceFrom = searchParams.get('priceFrom');
-		const priceTo = searchParams.get('priceTo');
-		if (priceFrom) priceInputSvelte.fromPrice = parseInt(priceFrom);
-		if (priceTo) priceInputSvelte.toPrice = parseInt(priceTo);
+		if (filterParams.range.from) rangeInputSvelte.fromRange = filterParams.range.from;
+		if (filterParams.range.to) rangeInputSvelte.toRange = filterParams.range.to;
 
-		// Initialize range
-		const rangeFrom = searchParams.get('rangeFrom');
-		const rangeTo = searchParams.get('rangeTo');
-		if (rangeFrom) rangeInputSvelte.fromRange = parseInt(rangeFrom);
-		if (rangeTo) rangeInputSvelte.toRange = parseInt(rangeTo);
+		if (filterParams.km.from) kmInputSvelte.fromKm = filterParams.km.from;
+		if (filterParams.km.to) kmInputSvelte.toKm = filterParams.km.to;
 
-		// Initialize km
-		const kmFrom = searchParams.get('kmFrom');
-		const kmTo = searchParams.get('kmTo');
-		if (kmFrom) kmInputSvelte.fromKm = parseInt(kmFrom);
-		if (kmTo) kmInputSvelte.toKm = parseInt(kmTo);
-
-		// Initialize power
-		const powerFrom = searchParams.get('powerFrom');
-		const powerTo = searchParams.get('powerTo');
-		if (powerFrom) powerInputSvelte.fromPower = parseInt(powerFrom);
-		if (powerTo) powerInputSvelte.toPower = parseInt(powerTo);
+		if (filterParams.power.from) powerInputSvelte.fromPower = filterParams.power.from;
+		if (filterParams.power.to) powerInputSvelte.toPower = filterParams.power.to;
 
 		// Initialize body type
-		const bodyTypeParam = searchParams.get('bodyType');
-		if (bodyTypeParam) {
-			const bodyType = getBodyTypes().find(bt => bt.value === bodyTypeParam || bt.slug === bodyTypeParam);
+		if (filterParams.bodyType) {
+			const bodyType = getBodyTypes().find(bt => bt.value === filterParams.bodyType || bt.slug === filterParams.bodyType);
 			if (bodyType) {
 				bodyTypeInputSvelte.selectedBodyType = bodyType;
 			}
 		}
 	}
 
+	/**
+	 * Generates URL search parameters from current filter states.
+	 * Creates URLSearchParams object that reflects all current filter selections.
+	 * @returns URLSearchParams object containing all active filter values
+	 */
 	generateUrlSearchParams(): URLSearchParams {
 		const params = new URLSearchParams();
 
-		// Add brand and model
-		if (searchBrandState.selectedBrand) {
-			params.set('brand', searchBrandState.selectedBrand.slug);
-		}
-		if (searchModelState.selectedModel) {
-			params.set('model', searchModelState.selectedModel.slug);
-		}
+		// Add brand and model using utility functions
+		setBrandParam(params, searchBrandState.selectedBrand);
+		setModelParam(params, searchModelState.selectedModel);
 
-		// Add range filters
-		if (yearInputSvelte.values.from) params.set('yearFrom', yearInputSvelte.values.from.toString());
-		if (yearInputSvelte.values.to) params.set('yearTo', yearInputSvelte.values.to.toString());
+		// Add range filters using utility functions
+		setRangeParams(params, 'year', yearInputSvelte.values.from, yearInputSvelte.values.to);
+		setRangeParams(params, 'price', priceInputSvelte.values.from, priceInputSvelte.values.to);
+		setRangeParams(params, 'range', rangeInputSvelte.values.from, rangeInputSvelte.values.to);
+		setRangeParams(params, 'km', kmInputSvelte.values.from, kmInputSvelte.values.to);
+		setRangeParams(params, 'power', powerInputSvelte.values.from, powerInputSvelte.values.to);
 
-		if (priceInputSvelte.values.from) params.set('priceFrom', priceInputSvelte.values.from.toString());
-		if (priceInputSvelte.values.to) params.set('priceTo', priceInputSvelte.values.to.toString());
-
-		if (rangeInputSvelte.values.from) params.set('rangeFrom', rangeInputSvelte.values.from.toString());
-		if (rangeInputSvelte.values.to) params.set('rangeTo', rangeInputSvelte.values.to.toString());
-
-		if (kmInputSvelte.values.from) params.set('kmFrom', kmInputSvelte.values.from.toString());
-		if (kmInputSvelte.values.to) params.set('kmTo', kmInputSvelte.values.to.toString());
-
-		if (powerInputSvelte.values.from) params.set('powerFrom', powerInputSvelte.values.from.toString());
-		if (powerInputSvelte.values.to) params.set('powerTo', powerInputSvelte.values.to.toString());
-
-		// Add body type
-		if (bodyTypeInputSvelte.selectedBodyType) {
-			params.set('bodyType', bodyTypeInputSvelte.selectedBodyType.slug);
-		}
+		// Add body type using dedicated function
+		setBodyTypeParam(params, bodyTypeInputSvelte.selectedBodyType);
 
 		return params;
 	}

@@ -4,21 +4,25 @@
 	import BrandCard from '../cards/BrandCard.svelte';
 	import ModelCard from '../cards/ModelCard.svelte';
 	import { homeBrandState, homeModelState, homeFilterUtils } from './homeFilterState.svelte';
-	import { brandCardSvelte } from '../cards/brandCard.svelte.js';
+	import { brandCardState } from '../cards/brandCard.svelte.js';
 	import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
+	import { brandInputSvelte } from './inputs/brandInput.svelte.js';
+	import { modelInputSvelte } from './inputs/modelInput.svelte.js';
 	import type { Brand, Model } from '../types';
 
 	// Brand handlers
 	function handleBrandOpen() {
-		brandCardSvelte.isOpen = true;
+		brandCardState.isOpen = true;
 	}
 
 	async function handleBrandSelect(brand: Brand) {
 		homeFilterUtils.setBrand(brand);
-		brandCardSvelte.isOpen = false;
+		brandInputSvelte.selectedBrand = brand;
+		brandCardState.isOpen = false;
 		
 		// Reset model state
 		resetModelCard();
+		modelInputSvelte.selectedModel = null;
 		
 		// Load models for the selected brand
 		await loadModels(brand.id);
@@ -26,21 +30,25 @@
 
 	function handleBrandClear() {
 		homeFilterUtils.resetBrand();
+		brandInputSvelte.selectedBrand = null;
 		resetModelCard();
+		modelInputSvelte.selectedModel = null;
 	}
 
 	function handleBrandClose() {
-		brandCardSvelte.isOpen = false;
-		brandCardSvelte.searchText = '';
+		brandCardState.isOpen = false;
+		brandCardState.searchText = '';
 	}
 
 	function handleModelSelect(model: Model) {
 		homeFilterUtils.setModel(model);
+		modelInputSvelte.selectedModel = model;
 		modelCardState.isOpen = false;
 	}
 
 	function handleModelClear() {
 		homeFilterUtils.resetModel();
+		modelInputSvelte.selectedModel = null;
 	}
 
 	function handleModelClose() {
@@ -74,7 +82,7 @@
 
 <!-- Modal Cards -->
 <BrandCard
-	isOpen={brandCardSvelte.isOpen}
+	isOpen={brandCardState.isOpen}
 	onSelect={handleBrandSelect}
 	onClose={handleBrandClose}
 />

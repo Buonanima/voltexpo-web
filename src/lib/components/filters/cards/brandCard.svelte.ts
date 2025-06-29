@@ -1,7 +1,7 @@
 import type { Brand } from '../types';
 import { getBrandsList } from '$lib/api/brand/getBrandsList';
 
-export const brandCardSvelte = $state<{
+export const brandCardState = $state<{
 	brands: Brand[];
 	isOpen: boolean;
 	searchText: string;
@@ -16,27 +16,28 @@ export const brandCardSvelte = $state<{
 });
 
 export function getFilteredBrands() {
-	return brandCardSvelte.searchText
-		? brandCardSvelte.brands.filter((brand) =>
-				brand.brand_name.toLowerCase().includes(brandCardSvelte.searchText.toLowerCase())
+	return brandCardState.searchText
+		? brandCardState.brands.filter((brand) =>
+				brand.brand_name.toLowerCase().includes(brandCardState.searchText.toLowerCase())
 			)
-		: brandCardSvelte.brands;
+		: brandCardState.brands;
 }
 
 export async function loadBrands() {
-	brandCardSvelte.loading = true;
-	brandCardSvelte.error = false;
+	brandCardState.loading = true;
+	brandCardState.error = false;
 
 	try {
 		const response = await getBrandsList();
-		brandCardSvelte.brands = response.data;
+		brandCardState.brands = response.data;
 	} catch (error) {
 		console.error('Error loading brands:', error);
-		brandCardSvelte.error = true;
+		brandCardState.error = true;
 	} finally {
-		brandCardSvelte.loading = false;
+		brandCardState.loading = false;
 	}
 }
 
-// Load brands immediately when the module is imported
-loadBrands().then();
+// Note: Brands are now loaded via server-side rendering (SSR) and passed as props to BrandCard
+// This eliminates unnecessary client-side API calls and improves performance
+// loadBrands() function is still available for backwards compatibility with pages that don't use SSR

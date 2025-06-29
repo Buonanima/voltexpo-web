@@ -1,20 +1,22 @@
 import type { Model } from '$lib/components/filters/types';
+import { createSuccessResponse, createErrorResponse, handleFetchError, handle404, type ApiResponse } from '$lib/components/filters/shared/apiUtils';
 import config from '$lib/config/env';
 
-export async function getModelBySlug(slug: string): Promise<{ data: Model | null; error: Error | null }> {
+export async function getModelBySlug(slug: string): Promise<ApiResponse<Model | null>> {
 	try {
 		const response = await fetch(`${config.API_BASE_URL}/api/get-model-by-slug?slug=${encodeURIComponent(slug)}`);
 		
 		if (!response.ok) {
-			if (response.status === 404) {
-				return { data: null, error: null }; // Model not found is not an error
-			}
-			throw new Error(`Failed to fetch model: ${response.status} ${response.statusText}`);
+			// Handle 404 as non-error (model not found is expected behavior)
+			const notFoundResponse = handle404(response, false, null);
+			if (notFoundResponse) return notFoundResponse;
+			
+			throw handleFetchError(response, 'fetch model');
 		}
 		
 		const data: Model = await response.json();
-		return { data, error: null };
+		return createSuccessResponse(data);
 	} catch (error) {
-		return { data: null, error: error as Error };
+		return createErrorResponse(error as Error, null);
 	}
 }

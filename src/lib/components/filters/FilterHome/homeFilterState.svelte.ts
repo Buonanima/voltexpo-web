@@ -1,4 +1,5 @@
 import type { Brand, Model } from '../types';
+import { createBrandUpdate, createModelUpdate, createResetState } from '../shared/brandModelUtils';
 
 // Home page scoped brand filter state
 export const homeBrandState = $state<{
@@ -19,13 +20,15 @@ export const homeModelState = $state<{
 // Utility functions for home filter state
 export const homeFilterUtils = {
 	resetBrand() {
-		homeBrandState.selectedBrand = null;
-		homeModelState.selectedModel = null;
-		homeModelState.disabled = true;
+		const resetState = createResetState();
+		homeBrandState.selectedBrand = resetState.selectedBrand;
+		homeModelState.selectedModel = resetState.selectedModel;
+		homeModelState.disabled = resetState.disabled;
 	},
 	
 	resetModel() {
-		homeModelState.selectedModel = null;
+		const modelUpdate = createModelUpdate(null);
+		homeModelState.selectedModel = modelUpdate.selectedModel;
 	},
 	
 	resetAll() {
@@ -33,16 +36,14 @@ export const homeFilterUtils = {
 	},
 	
 	setBrand(brand: Brand | null) {
-		homeBrandState.selectedBrand = brand;
-		if (brand) {
-			homeModelState.disabled = false;
-		} else {
-			homeModelState.selectedModel = null;
-			homeModelState.disabled = true;
-		}
+		const brandUpdate = createBrandUpdate(brand);
+		homeBrandState.selectedBrand = brandUpdate.selectedBrand;
+		homeModelState.selectedModel = brandUpdate.modelUpdate.selectedModel;
+		homeModelState.disabled = brandUpdate.modelUpdate.disabled;
 	},
 	
 	setModel(model: Model | null) {
-		homeModelState.selectedModel = model;
+		const modelUpdate = createModelUpdate(model);
+		homeModelState.selectedModel = modelUpdate.selectedModel;
 	}
 };

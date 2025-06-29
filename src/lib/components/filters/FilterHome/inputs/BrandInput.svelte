@@ -2,6 +2,7 @@
 <script lang="ts">
 	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
 	import { brandInputSvelte } from './brandInput.svelte.js';
+	import { searchBrandInputSvelte } from '../../SearchPage/inputs/brandInput.svelte';
 
 	// Props
 	const { value = '', disabled = false, variant = 'home', onOpen, onClear, onChange } = $props<{
@@ -14,7 +15,11 @@
 	}>();
 
 	// Derived values using runes
-	const displayValue = $derived(brandInputSvelte.selectedBrand?.brand_name || value);
+	const displayValue = $derived(
+		variant === 'search' 
+			? searchBrandInputSvelte.selectedBrand?.brand_name || value
+			: brandInputSvelte.selectedBrand?.brand_name || value
+	);
 	const showCross = $derived(!!displayValue && !disabled);
 
 	// Event handlers

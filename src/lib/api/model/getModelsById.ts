@@ -1,21 +1,20 @@
 import type { Model } from '$lib/components/filters/types';
+import { createSuccessResponse, createErrorResponse, handleFetchError, type ApiResponse } from '$lib/components/filters/shared/apiUtils';
 import config from '$lib/config/env';
 
-export async function getModelsById(
-	brandId: number
-): Promise<{ data: Model[]; error: Error | null }> {
+export async function getModelsById(brandId: number): Promise<ApiResponse<Model[]>> {
 	try {
 		const response = await fetch(
 			`${config.API_BASE_URL}/api/get-models-by-brand-id?brand_id=${brandId}`
 		);
 		
 		if (!response.ok) {
-			throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`);
+			throw handleFetchError(response, 'fetch models');
 		}
 		
 		const data: Model[] = await response.json();
-		return { data, error: null };
+		return createSuccessResponse(data);
 	} catch (error) {
-		return { data: [], error: error as Error };
+		return createErrorResponse(error as Error, []);
 	}
 }

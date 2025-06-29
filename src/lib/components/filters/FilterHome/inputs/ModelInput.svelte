@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { modelInputSvelte } from './modelInput.svelte.js';
 	import { brandInputSvelte } from './brandInput.svelte.js';
+	import { searchModelInputSvelte } from '../../SearchPage/inputs/modelInput.svelte';
+	import { searchBrandInputSvelte } from '../../SearchPage/inputs/brandInput.svelte';
 	import { modelCardState } from '../../cards/modelCard.svelte.js';
 	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
 
 	// Props
-	const { disabled = false, label = 'Model', variant = 'home', onClear, onChange } = $props<{
+	const { value, disabled = false, label = 'Model', variant = 'home', onClear, onChange, onClick } = $props<{
 		value?: string;
 		disabled?: boolean;
 		label?: string;
 		variant?: 'home' | 'search';
 		onClear?: () => void;
 		onChange?: (value: string | null) => void;
+		onClick?: () => void;
 	}>();
 
 	// Constants
@@ -19,7 +22,11 @@
 	const DISABLED_PLACEHOLDER = 'Select brand first';
 
 	// DERIVED VALUES
-	const displayValue = $derived(modelInputSvelte.selectedModel?.model_name);
+	const displayValue = $derived(
+		variant === 'search'
+			? searchModelInputSvelte.selectedModel?.model_name || value
+			: modelInputSvelte.selectedModel?.model_name || value
+	);
 	const showCross = $derived(!!displayValue && !disabled);
 	const placeholder = $derived(disabled ? DISABLED_PLACEHOLDER : ENABLED_PLACEHOLDER);
 
@@ -31,8 +38,20 @@
 	}
 
 	function handleInputClick(): void {
-		if (brandInputSvelte.selectedBrand?.id) {
-			modelCardState.isOpen = true;
+		if (disabled) return;
+		
+		if (onClick) {
+			// Search page: use the provided onClick handler
+			onClick();
+		} else {
+			// Home page: check if brand is selected before opening model card
+			const selectedBrand = variant === 'search' 
+				? searchBrandInputSvelte.selectedBrand 
+				: brandInputSvelte.selectedBrand;
+			
+			if (selectedBrand?.id) {
+				modelCardState.isOpen = true;
+			}
 		}
 	}
 

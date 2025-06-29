@@ -11,10 +11,10 @@
 	import Header from './components/Header.svelte';
 	import { fetchPostList } from '$lib/api/post/fetchPostList/fetchPostList';
 	import { OrderDirection, OrderField, OrderingHelpers } from '$lib/api/post/fetchPostList/orderingHelpers';
-	import type { FilterParams } from '$lib/api/post/fetchPostList/types';
+	import type { FilterParams } from '$lib/components/filters/types';
 	
 	// Import filter state objects for direct initialization
-	import { searchFilterUtils } from '$lib/components/filters/SearchPage/searchFilterState.svelte';
+	import { searchFilterUtils, searchBrandState } from '$lib/components/filters/SearchPage/searchFilterState.svelte';
 	import { yearInputSvelte } from '$lib/components/filters/SearchPage/inputs/yearInput.svelte.js';
 	import { priceInputSvelte } from '$lib/components/filters/SearchPage/inputs/priceInput.svelte.js';
 	import { rangeInputSvelte } from '$lib/components/filters/SearchPage/inputs/rangeInput.svelte.js';
@@ -22,12 +22,24 @@
 	import { kmInputSvelte } from '$lib/components/filters/SearchPage/inputs/kmInput.svelte.js';
 	import { powerInputSvelte } from '$lib/components/filters/SearchPage/inputs/powerInput.svelte.js';
 	import { getBodyTypes } from '$lib/components/filters/cards/bodyTypeCard.svelte.js';
+	import { getModelsById } from '$lib/api/model/getModelsById';
+	import { getBrandsList } from '$lib/api/brand/getBrandsList';
 
 	const { data }: { data: PageData } = $props();
 
 	// Initialize filter state BEFORE component rendering (during SSR and client)
 	// This prevents filter inputs from flashing from empty to populated
 	initializeFilterStateFromServerData(data);
+
+	// Local state for models (to eliminate shared state bleeding)
+	let availableModels = $state(data.availableModels || []);
+	let modelsLoading = $state(false);
+	let modelsError = $state(false);
+
+	// Local state for brands (to eliminate shared state bleeding)
+	let availableBrands = $state(data.availableBrands || []);
+	let brandsLoading = $state(false);
+	let brandsError = $state(false);
 
 	function initializeFilterStateFromServerData(pageData: typeof data) {
 		try {
@@ -149,6 +161,68 @@
 		pageState.showMoreFilters = !pageState.showMoreFilters;
 	}
 
+	// Handle client-side models loading when brand changes
+	async function loadModelsForBrand(brandId: number | null): Promise<void> {
+		if (!brandId) {
+			availableModels = [];
+			return;
+		}
+
+		modelsLoading = true;
+		modelsError = false;
+
+		try {
+			const { data: models, error } = await getModelsById(brandId);
+			if (models && !error) {
+				availableModels = models;
+			} else {
+				modelsError = true;
+				availableModels = [];
+			}
+		} catch (error) {
+			console.error('Error loading models:', error);
+			modelsError = true;
+			availableModels = [];
+		} finally {
+			modelsLoading = false;
+		}
+	}
+
+	// Handle retry for models loading
+	function handleModelsRetry(): void {
+		const brandId = searchBrandState.selectedBrand?.id;
+		if (brandId) {
+			loadModelsForBrand(brandId);
+		}
+	}
+
+	// Handle brands loading (for client-side cases where SSR failed)
+	async function loadBrands(): Promise<void> {
+		brandsLoading = true;
+		brandsError = false;
+
+		try {
+			const { data: brands, error } = await getBrandsList();
+			if (brands && !error) {
+				availableBrands = brands;
+			} else {
+				brandsError = true;
+				availableBrands = [];
+			}
+		} catch (error) {
+			console.error('Error loading brands:', error);
+			brandsError = true;
+			availableBrands = [];
+		} finally {
+			brandsLoading = false;
+		}
+	}
+
+	// Handle retry for brands loading
+	function handleBrandsRetry(): void {
+		loadBrands();
+	}
+
 	// Helper function to enrich cars with like state
 	function enrichCarsWithLikeState(cars: typeof data.searchResults) {
 		return cars.map(car => ({
@@ -174,6 +248,41 @@
 			return `${model} Electric Cars`;
 		} else {
 			return 'Electric Cars Search';
+		}
+	});
+
+	// Build H1 title - just brand and model names without "Electric Cars"
+	const h1Title = $derived.by(() => {
+		const { brand, model } = data.filters;
+		if (brand && model) {
+			return `${brand} ${model}`;
+		} else if (brand) {
+			return brand;
+		} else if (model) {
+			return model;
+		} else {
+			return 'Electric Cars';
+		}
+	});
+
+	// Watch for brand changes and load models accordingly
+	$effect(() => {
+		const currentBrandId = searchBrandState.selectedBrand?.id;
+		
+		// If brand changes and we don't have models for this brand, load them
+		// But only if models weren't already pre-loaded from server
+		if (currentBrandId && availableModels.length === 0 && !modelsLoading) {
+			loadModelsForBrand(currentBrandId);
+		} else if (!currentBrandId) {
+			// Clear models when no brand is selected
+			availableModels = [];
+		}
+	});
+
+	// Load brands if they weren't pre-loaded from server (fallback)
+	$effect(() => {
+		if (availableBrands.length === 0 && !brandsLoading && !brandsError) {
+			loadBrands();
 		}
 	});
 
@@ -221,6 +330,14 @@
 		bind:this={searchFilterComponent}
 		showMoreFilters={pageState.showMoreFilters} 
 		onFiltersChange={handleFiltersChange}
+		availableModels={availableModels}
+		modelsLoading={modelsLoading}
+		modelsError={modelsError}
+		onModelsRetry={handleModelsRetry}
+		availableBrands={availableBrands}
+		brandsLoading={brandsLoading}
+		brandsError={brandsError}
+		onBrandsRetry={handleBrandsRetry}
 	/>
 	<SearchFilterButtons 
 		onSearch={handleSearch}
@@ -232,21 +349,13 @@
 <div class="container">
 	<main class="content">
 		<section class="section">
-			<h1 class="page-title">{searchTitle}</h1>
+			<h1 class="page-title">{h1Title}</h1>
 			
-			{#if data.filters.brand || data.filters.model}
-				<div class="filter-summary">
-					<p class="text-zinc-600 dark:text-zinc-400">
-						{#if data.filters.brand && data.filters.model}
-							Showing results for <strong>{data.filters.brand} {data.filters.model}</strong>
-						{:else if data.filters.brand}
-							Showing results for <strong>{data.filters.brand}</strong>
-						{:else if data.filters.model}
-							Showing results for <strong>{data.filters.model}</strong>
-						{/if}
-					</p>
-				</div>
-			{/if}
+			<div class="filter-summary">
+				<p class="text-[17px] text-zinc-600 dark:text-zinc-400">
+					{searchResultsWithLikeState.length} {searchResultsWithLikeState.length === 1 ? 'result' : 'results'}
+				</p>
+			</div>
 
 			{#if pageState.error}
 				<div class="error-message">

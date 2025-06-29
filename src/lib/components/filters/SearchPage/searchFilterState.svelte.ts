@@ -1,5 +1,5 @@
-import type { Brand, Model } from '../types';
-import type { FilterParams } from '$lib/api/post/fetchPostList/types';
+import type { Brand, Model, FilterParams } from '../types';
+import { createBrandUpdate, createModelUpdate, createResetState } from '../shared/brandModelUtils';
 import { yearInputSvelte } from './inputs/yearInput.svelte.js';
 import { priceInputSvelte } from './inputs/priceInput.svelte.js';
 import { bodyTypeInputSvelte } from './inputs/bodyTypeInput.svelte.js';
@@ -23,8 +23,17 @@ export const searchModelState = $state<{
 	disabled: true
 });
 
-// Main search filter state object that provides currentFilters
+/**
+ * Main search filter state aggregator.
+ * Provides a reactive currentFilters getter that combines all individual filter states
+ * into a unified FilterParams object for API consumption.
+ */
 export const searchFilterState = {
+	/**
+	 * Reactive getter that aggregates all filter states into a single FilterParams object.
+	 * Automatically updates when any individual filter state changes.
+	 * @returns Current filter values from all input components
+	 */
 	get currentFilters(): FilterParams {
 		return {
 			brand: searchBrandState.selectedBrand ? {
@@ -69,26 +78,26 @@ export const searchFilterState = {
 // Utility functions for search filter state
 export const searchFilterUtils = {
 	resetBrand() {
-		searchBrandState.selectedBrand = null;
-		searchModelState.selectedModel = null;
-		searchModelState.disabled = true;
+		const resetState = createResetState();
+		searchBrandState.selectedBrand = resetState.selectedBrand;
+		searchModelState.selectedModel = resetState.selectedModel;
+		searchModelState.disabled = resetState.disabled;
 	},
 	
 	resetModel() {
-		searchModelState.selectedModel = null;
+		const modelUpdate = createModelUpdate(null);
+		searchModelState.selectedModel = modelUpdate.selectedModel;
 	},
 	
 	setBrand(brand: Brand | null) {
-		searchBrandState.selectedBrand = brand;
-		if (brand) {
-			searchModelState.disabled = false;
-		} else {
-			searchModelState.selectedModel = null;
-			searchModelState.disabled = true;
-		}
+		const brandUpdate = createBrandUpdate(brand);
+		searchBrandState.selectedBrand = brandUpdate.selectedBrand;
+		searchModelState.selectedModel = brandUpdate.modelUpdate.selectedModel;
+		searchModelState.disabled = brandUpdate.modelUpdate.disabled;
 	},
 	
 	setModel(model: Model | null) {
-		searchModelState.selectedModel = model;
+		const modelUpdate = createModelUpdate(model);
+		searchModelState.selectedModel = modelUpdate.selectedModel;
 	}
 };

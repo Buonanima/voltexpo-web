@@ -12,7 +12,7 @@
 	import BodyTypeCard from '../cards/BodyTypeCard.svelte';
 	
 	import { searchBrandState, searchModelState } from './searchFilterState.svelte';
-	import { brandCardSvelte } from '../cards/brandCard.svelte.js';
+	import { brandCardState } from '../cards/brandCard.svelte.js';
 	import { modelCardState } from '../cards/modelCard.svelte';
 	import { bodyTypeCardSvelte } from '../cards/bodyTypeCard.svelte.js';
 	import { yearInputSvelte } from './inputs/yearInput.svelte.js';
@@ -27,15 +27,31 @@
 	import { searchFilterState } from './searchFilterState.svelte';
 	import { searchFilterUrlParams } from './searchFilterUrlParams.svelte';
 	
-	import type { FilterParams } from '$lib/api/post/fetchPostList/types';
+	import type { FilterParams, Model, Brand } from '../types';
 
 	// Props
 	const { 
 		showMoreFilters = false,
-		onFiltersChange
+		onFiltersChange,
+		availableModels = [],
+		modelsLoading = false,
+		modelsError = false,
+		onModelsRetry,
+		availableBrands = [],
+		brandsLoading = false,
+		brandsError = false,
+		onBrandsRetry
 	} = $props<{
 		showMoreFilters?: boolean;
 		onFiltersChange?: (filters: FilterParams) => void;
+		availableModels?: Model[];
+		modelsLoading?: boolean;
+		modelsError?: boolean;
+		onModelsRetry?: () => void;
+		availableBrands?: Brand[];
+		brandsLoading?: boolean;
+		brandsError?: boolean;
+		onBrandsRetry?: () => void;
 	}>();
 
 	// Get current filters from state module
@@ -81,6 +97,7 @@
 			value={searchModelState.selectedModel?.model_name || ''}
 			disabled={searchModelState.disabled}
 			variant="search"
+			onClick={searchFilterHandlers.handleModelOpen}
 			onClear={searchFilterHandlers.handleModelClear}
 		/>
 
@@ -126,16 +143,24 @@
 
 <!-- Modal Cards -->
 <BrandCard
-	isOpen={brandCardSvelte.isOpen}
+	isOpen={brandCardState.isOpen}
+	brands={availableBrands}
+	loading={brandsLoading}
+	error={brandsError}
 	onSelect={searchFilterHandlers.handleBrandSelect}
 	onClose={searchFilterHandlers.handleBrandClose}
+	onRetry={onBrandsRetry}
 />
 
 <ModelCard
 	isOpen={modelCardState.isOpen}
 	brandId={searchBrandState.selectedBrand?.id}
+	models={availableModels}
+	loading={modelsLoading}
+	error={modelsError}
 	onSelect={searchFilterHandlers.handleModelSelect}
 	onClose={searchFilterHandlers.handleModelClose}
+	onRetry={onModelsRetry}
 />
 
 <BodyTypeCard

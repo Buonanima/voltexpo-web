@@ -1,10 +1,11 @@
 import type { PageServerLoad } from './$types';
 import { fetchPostList } from '$lib/api/post/fetchPostList/fetchPostList';
 import { OrderDirection, OrderField, OrderingHelpers } from '$lib/api/post/fetchPostList/orderingHelpers';
-import type { FilterParams } from '$lib/api/post/fetchPostList/types';
 import { getBrandBySlug } from '$lib/api/brand/getBrandBySlug';
+import { getBrandsList } from '$lib/api/brand/getBrandsList';
 import { getModelBySlug } from '$lib/api/model/getModelBySlug';
-import type { Brand, Model } from '$lib/components/filters/types';
+import { getModelsById } from '$lib/api/model/getModelsById';
+import type { Brand, Model, FilterParams } from '$lib/components/filters/types';
 
 // Helper function to resolve brand and model objects from slugs
 async function resolveBrandAndModel(searchParams: URLSearchParams): Promise<{ brand: Brand | null; model: Model | null; errors: string[] }> {
@@ -140,6 +141,34 @@ export const load: PageServerLoad = async ({ url }) => {
 			console.warn('Filter resolution errors:', errors);
 		}
 
+		// Pre-fetch models if we have a brand (for SSR optimization)
+		let availableModels: Model[] = [];
+		if (resolvedBrand) {
+			try {
+				const { data: models, error } = await getModelsById(resolvedBrand.id);
+				if (models && !error) {
+					availableModels = models;
+				} else if (error) {
+					console.warn('Failed to load models for brand:', resolvedBrand.brand_name, error);
+				}
+			} catch (error) {
+				console.warn('Error loading models for brand:', resolvedBrand.brand_name, error);
+			}
+		}
+
+		// Pre-fetch all brands (for SSR optimization - eliminate client-side API calls)
+		let availableBrands: Brand[] = [];
+		try {
+			const { data: brands, error } = await getBrandsList();
+			if (brands && !error) {
+				availableBrands = brands;
+			} else if (error) {
+				console.warn('Failed to load brands list:', error);
+			}
+		} catch (error) {
+			console.warn('Error loading brands list:', error);
+		}
+
 		// Fetch cars based on all filter parameters
 		const searchResults = await fetchPostList({
 			filters: Object.keys(filters).length > 0 ? filters : undefined,
@@ -156,6 +185,9 @@ export const load: PageServerLoad = async ({ url }) => {
 			// Pass complete objects for client-side initialization
 			resolvedBrandObject: resolvedBrand,
 			resolvedModelObject: resolvedModel,
+			// Pre-loaded data for SSR optimization (eliminate client-side API calls)
+			availableModels,
+			availableBrands,
 			filterErrors: errors
 		};
 	} catch (err) {
@@ -169,6 +201,8 @@ export const load: PageServerLoad = async ({ url }) => {
 			allFilters: {},
 			resolvedBrandObject: null,
 			resolvedModelObject: null,
+			availableModels: [],
+			availableBrands: [],
 			filterErrors: []
 		};
 	}
