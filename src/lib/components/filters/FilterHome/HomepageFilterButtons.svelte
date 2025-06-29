@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { brandInputSvelte } from './inputs/brandInput.svelte.js';
-	import { modelInputSvelte } from './inputs/modelInput.svelte.js';
+	import { homeBrandState, homeModelState } from './homeFilterState.svelte';
 
 	function handleSearch() {
 		const params = new URLSearchParams();
 		
-		if (brandInputSvelte.selectedBrand) {
-			params.set('brand', brandInputSvelte.selectedBrand.brand_name);
+		if (homeBrandState.selectedBrand) {
+			params.set('brand', homeBrandState.selectedBrand.slug);
 		}
 		
-		if (modelInputSvelte.selectedModel) {
-			params.set('model', modelInputSvelte.selectedModel.model_name);
+		if (homeModelState.selectedModel) {
+			params.set('model', homeModelState.selectedModel.slug);
 		}
 		
 		const queryString = params.toString();

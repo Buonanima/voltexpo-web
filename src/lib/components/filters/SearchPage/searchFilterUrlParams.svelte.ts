@@ -1,5 +1,4 @@
-import { brandInputSvelte } from '../FilterHome/inputs/brandInput.svelte.js';
-import { modelInputSvelte } from '../FilterHome/inputs/modelInput.svelte.js';
+import { searchBrandState, searchModelState, searchFilterUtils } from './searchFilterState.svelte';
 import { yearInputSvelte } from './inputs/yearInput.svelte.js';
 import { priceInputSvelte } from './inputs/priceInput.svelte.js';
 import { bodyTypeInputSvelte } from './inputs/bodyTypeInput.svelte.js';
@@ -7,21 +6,39 @@ import { rangeInputSvelte } from './inputs/rangeInput.svelte.js';
 import { kmInputSvelte } from './inputs/kmInput.svelte.js';
 import { powerInputSvelte } from './inputs/powerInput.svelte.js';
 import { getBodyTypes } from '../cards/bodyTypeCard.svelte.js';
+import { getBrandBySlug } from '$lib/api/brand/getBrandBySlug';
+import { getModelBySlug } from '$lib/api/model/getModelBySlug';
 
 export class SearchFilterUrlParams {
-	initializeFromUrlParams(searchParams: URLSearchParams): void {
+	async initializeFromUrlParams(searchParams: URLSearchParams): Promise<void> {
 		// Initialize brand
 		const brandParam = searchParams.get('brand');
 		if (brandParam) {
-			// TODO: Need to load brand by slug/name and set it
-			// This requires extending the brand loading functionality
+			try {
+				const { data: brand, error } = await getBrandBySlug(brandParam);
+				if (brand && !error) {
+					searchFilterUtils.setBrand(brand);
+				} else if (error) {
+					console.warn('Failed to load brand from URL:', error);
+				}
+			} catch (error) {
+				console.warn('Error loading brand from URL:', error);
+			}
 		}
 
 		// Initialize model 
 		const modelParam = searchParams.get('model');
-		if (modelParam) {
-			// TODO: Need to load model by slug/name and set it
-			// This requires extending the model loading functionality
+		if (modelParam && searchBrandState.selectedBrand) {
+			try {
+				const { data: model, error } = await getModelBySlug(modelParam);
+				if (model && !error) {
+					searchFilterUtils.setModel(model);
+				} else if (error) {
+					console.warn('Failed to load model from URL:', error);
+				}
+			} catch (error) {
+				console.warn('Error loading model from URL:', error);
+			}
 		}
 
 		// Initialize year
@@ -68,11 +85,11 @@ export class SearchFilterUrlParams {
 		const params = new URLSearchParams();
 
 		// Add brand and model
-		if (brandInputSvelte.selectedBrand) {
-			params.set('brand', brandInputSvelte.selectedBrand.slug);
+		if (searchBrandState.selectedBrand) {
+			params.set('brand', searchBrandState.selectedBrand.slug);
 		}
-		if (modelInputSvelte.selectedModel) {
-			params.set('model', modelInputSvelte.selectedModel.slug);
+		if (searchModelState.selectedModel) {
+			params.set('model', searchModelState.selectedModel.slug);
 		}
 
 		// Add range filters

@@ -3,8 +3,12 @@ import config from '$lib/config/env';
 
 export async function getBrandsList(): Promise<{ data: Brand[]; error: Error | null }> {
 	try {
-		// Replace with your actual API call
 		const response = await fetch(`${config.API_BASE_URL}/api/get-all-brands`);
+		
+		if (!response.ok) {
+			throw new Error(`Failed to fetch brands: ${response.status} ${response.statusText}`);
+		}
+		
 		const data: Brand[] = await response.json();
 		return { data, error: null };
 	} catch (error) {

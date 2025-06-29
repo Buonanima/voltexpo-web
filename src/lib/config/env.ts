@@ -7,7 +7,7 @@ interface Config {
 const config: Config = {
 	API_BASE_URL: dev
 		? 'http://localhost:8080'
-		: 'https://your-production-api.com' // Replace with your production URL
+		: 'http://localhost:8080' // Replace with your production URL
 };
 
 export default config;

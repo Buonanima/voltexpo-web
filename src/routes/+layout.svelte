@@ -1,4 +1,6 @@
 <script>
+	import '../app.css';
+	
 	// Define props or state that you need to pass to the navbar component
 
 	// Any other global state or logic

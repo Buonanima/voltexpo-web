@@ -1,7 +1,6 @@
 import type { Brand, Model } from '../types';
 import type { BodyType } from '../cards/bodyTypeCard.svelte.js';
-import { brandInputSvelte } from '../FilterHome/inputs/brandInput.svelte.js';
-import { modelInputSvelte } from '../FilterHome/inputs/modelInput.svelte.js';
+import { searchBrandState, searchModelState, searchFilterUtils } from './searchFilterState.svelte';
 import { brandCardSvelte } from '../cards/brandCard.svelte.js';
 import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
 import { bodyTypeCardSvelte } from '../cards/bodyTypeCard.svelte.js';
@@ -19,26 +18,18 @@ export class SearchFilterHandlers {
 	}
 
 	async handleBrandSelect(brand: Brand) {
-		brandInputSvelte.selectedBrand = brand;
+		searchFilterUtils.setBrand(brand);
 		brandCardSvelte.isOpen = false;
-		
-		// Clear model when brand changes
-		if (modelInputSvelte.selectedModel) {
-			modelInputSvelte.selectedModel = null;
-		}
 		
 		// Reset model state
 		resetModelCard();
-		modelInputSvelte.disabled = false;
 		
 		// Load models for the selected brand
 		await loadModels(brand.id);
 	}
 
 	handleBrandClear() {
-		brandInputSvelte.selectedBrand = null;
-		modelInputSvelte.selectedModel = null;
-		modelInputSvelte.disabled = true;
+		searchFilterUtils.resetBrand();
 		resetModelCard();
 	}
 
@@ -49,12 +40,12 @@ export class SearchFilterHandlers {
 
 	// Model handlers
 	handleModelSelect(model: Model) {
-		modelInputSvelte.selectedModel = model;
+		searchFilterUtils.setModel(model);
 		modelCardState.isOpen = false;
 	}
 
 	handleModelClear() {
-		modelInputSvelte.selectedModel = null;
+		searchFilterUtils.resetModel();
 	}
 
 	handleModelClose() {
@@ -108,9 +99,7 @@ export class SearchFilterHandlers {
 
 	// Reset all filters
 	resetAllFilters(): void {
-		brandInputSvelte.selectedBrand = null;
-		modelInputSvelte.selectedModel = null;
-		modelInputSvelte.disabled = true;
+		searchFilterUtils.resetBrand();
 		yearInputSvelte.reset();
 		priceInputSvelte.reset();
 		rangeInputSvelte.reset();

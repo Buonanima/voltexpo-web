@@ -11,8 +11,7 @@
 	import ModelCard from '../cards/ModelCard.svelte';
 	import BodyTypeCard from '../cards/BodyTypeCard.svelte';
 	
-	import { brandInputSvelte } from '../FilterHome/inputs/brandInput.svelte.js';
-	import { modelInputSvelte } from '../FilterHome/inputs/modelInput.svelte.js';
+	import { searchBrandState, searchModelState } from './searchFilterState.svelte';
 	import { brandCardSvelte } from '../cards/brandCard.svelte.js';
 	import { modelCardState } from '../cards/modelCard.svelte';
 	import { bodyTypeCardSvelte } from '../cards/bodyTypeCard.svelte.js';
@@ -58,8 +57,8 @@
 		searchFilterHandlers.resetAllFilters();
 	}
 
-	export function initializeFromUrlParams(searchParams: URLSearchParams): void {
-		searchFilterUrlParams.initializeFromUrlParams(searchParams);
+	export async function initializeFromUrlParams(searchParams: URLSearchParams): Promise<void> {
+		await searchFilterUrlParams.initializeFromUrlParams(searchParams);
 	}
 
 	export function generateUrlSearchParams(): URLSearchParams {
@@ -72,15 +71,15 @@
 	<div class="w-full grid grid-cols-3 max-[750px]:grid-cols-2 rounded-[20px] mb-[20px]">
 		<!-- First Row: Brand, Model, Year -->
 		<BrandInput
-			value={brandInputSvelte.selectedBrand?.brand_name || ''}
+			value={searchBrandState.selectedBrand?.brand_name || ''}
 			variant="search"
 			onOpen={searchFilterHandlers.handleBrandOpen}
 			onClear={searchFilterHandlers.handleBrandClear}
 		/>
 
 		<ModelInput
-			value={modelInputSvelte.selectedModel?.model_name || ''}
-			disabled={modelInputSvelte.disabled}
+			value={searchModelState.selectedModel?.model_name || ''}
+			disabled={searchModelState.disabled}
 			variant="search"
 			onClear={searchFilterHandlers.handleModelClear}
 		/>
@@ -134,7 +133,7 @@
 
 <ModelCard
 	isOpen={modelCardState.isOpen}
-	brandId={brandInputSvelte.selectedBrand?.id}
+	brandId={searchBrandState.selectedBrand?.id}
 	onSelect={searchFilterHandlers.handleModelSelect}
 	onClose={searchFilterHandlers.handleModelClose}
 />

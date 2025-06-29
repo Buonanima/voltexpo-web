@@ -12,8 +12,75 @@
 	import { fetchPostList } from '$lib/api/post/fetchPostList/fetchPostList';
 	import { OrderDirection, OrderField, OrderingHelpers } from '$lib/api/post/fetchPostList/orderingHelpers';
 	import type { FilterParams } from '$lib/api/post/fetchPostList/types';
+	
+	// Import filter state objects for direct initialization
+	import { searchFilterUtils } from '$lib/components/filters/SearchPage/searchFilterState.svelte';
+	import { yearInputSvelte } from '$lib/components/filters/SearchPage/inputs/yearInput.svelte.js';
+	import { priceInputSvelte } from '$lib/components/filters/SearchPage/inputs/priceInput.svelte.js';
+	import { rangeInputSvelte } from '$lib/components/filters/SearchPage/inputs/rangeInput.svelte.js';
+	import { bodyTypeInputSvelte } from '$lib/components/filters/SearchPage/inputs/bodyTypeInput.svelte.js';
+	import { kmInputSvelte } from '$lib/components/filters/SearchPage/inputs/kmInput.svelte.js';
+	import { powerInputSvelte } from '$lib/components/filters/SearchPage/inputs/powerInput.svelte.js';
+	import { getBodyTypes } from '$lib/components/filters/cards/bodyTypeCard.svelte.js';
 
 	const { data }: { data: PageData } = $props();
+
+	// Initialize filter state BEFORE component rendering (during SSR and client)
+	// This prevents filter inputs from flashing from empty to populated
+	initializeFilterStateFromServerData(data);
+
+	function initializeFilterStateFromServerData(pageData: typeof data) {
+		try {
+			// Set brand directly if we have the complete object
+			if (pageData.resolvedBrandObject) {
+				searchFilterUtils.setBrand(pageData.resolvedBrandObject);
+			}
+
+			// Set model directly if we have the complete object
+			if (pageData.resolvedModelObject) {
+				searchFilterUtils.setModel(pageData.resolvedModelObject);
+			}
+
+			// Set other filters from parsed data
+			const filters = pageData.allFilters;
+			
+			if (filters.year) {
+				if (filters.year.from) yearInputSvelte.fromYear = parseInt(filters.year.from);
+				if (filters.year.to) yearInputSvelte.toYear = parseInt(filters.year.to);
+			}
+
+			if (filters.price) {
+				if (filters.price.from) priceInputSvelte.fromPrice = parseInt(filters.price.from);
+				if (filters.price.to) priceInputSvelte.toPrice = parseInt(filters.price.to);
+			}
+
+			if (filters.range) {
+				if (filters.range.from) rangeInputSvelte.fromRange = parseInt(filters.range.from);
+				if (filters.range.to) rangeInputSvelte.toRange = parseInt(filters.range.to);
+			}
+
+			if (filters.km) {
+				if (filters.km.from) kmInputSvelte.fromKm = parseInt(filters.km.from);
+				if (filters.km.to) kmInputSvelte.toKm = parseInt(filters.km.to);
+			}
+
+			if (filters.power) {
+				if (filters.power.from) powerInputSvelte.fromPower = parseInt(filters.power.from);
+				if (filters.power.to) powerInputSvelte.toPower = parseInt(filters.power.to);
+			}
+
+			if (filters.bodyType?.slug) {
+				// Find body type by slug and set it
+				const bodyType = getBodyTypes().find(bt => bt.value === filters.bodyType?.slug || bt.slug === filters.bodyType?.slug);
+				if (bodyType) {
+					bodyTypeInputSvelte.selectedBodyType = bodyType;
+				}
+			}
+
+		} catch (error) {
+			console.error('Failed to initialize filter state from server data:', error);
+		}
+	}
 
 	const pageState = $state({
 		currentNavbarTab: 'search',
@@ -22,7 +89,8 @@
 		logInUrl: '/login',
 		showMoreFilters: false,
 		searchResults: data.searchResults,
-		isLoading: false
+		isLoading: false,
+		error: null as string | null
 	});
 
 	// Bind to SearchFilter component
@@ -38,6 +106,9 @@
 		pageState.isLoading = true;
 		
 		try {
+			// Clear any previous error
+			pageState.error = null;
+			
 			// Get current filters from SearchFilter component
 			const filters = searchFilterComponent.getCurrentFilters();
 			
@@ -59,12 +130,15 @@
 			
 		} catch (error) {
 			console.error('Search failed:', error);
-			// You might want to show an error message to the user
+			// Set empty results and show user-friendly message
+			pageState.searchResults = [];
+			pageState.error = 'Search failed. Please try again or adjust your filters.';
 		} finally {
 			pageState.isLoading = false;
 		}
 	}
 
+	// Do not remove this, we will need auto-search in the future
 	// Handle filter changes (optional - for real-time updates)
 	function handleFiltersChange(filters: FilterParams) {
 		currentFilters = filters;
@@ -103,41 +177,29 @@
 		}
 	});
 
-	// Initialize filters from URL on mount
-	if (browser) {
-		// This will run after component mounts
-		$effect(() => {
-			if (searchFilterComponent) {
-				const urlParams = new URLSearchParams(window.location.search);
-				searchFilterComponent.initializeFromUrlParams(urlParams);
+	// Handle client-side navigation (when user navigates without server data)
+	$effect(() => {
+		if (searchFilterComponent && browser) {
+			// Check if we have URL parameters
+			const urlParams = new URLSearchParams(window.location.search);
+			const hasUrlParams = Array.from(urlParams.keys()).length > 0;
+			
+			// Only use URL parsing for client-side navigation when we don't have server data
+			const hasServerData = data.resolvedBrandObject || data.resolvedModelObject || Object.keys(data.allFilters).length > 0;
+			
+			if (!hasServerData) {
+				if (hasUrlParams) {
+					// Fallback to URL parsing for client-side navigation
+					searchFilterComponent.initializeFromUrlParams(urlParams).catch(error => {
+						console.error('Failed to initialize filters from URL:', error);
+					});
+				} else {
+					// No URL params and no server data - reset all filters for clean state
+					searchFilterComponent.resetAllFilters();
+				}
 			}
-		});
-	} else {
-		// For SSR, we can use the data from the server
-		$effect(() => {
-			if (searchFilterComponent && data.allFilters) {
-				// Convert server filters back to URL params for initialization
-				const params = new URLSearchParams();
-				const filters = data.allFilters;
-				
-				if (filters.brand?.slug) params.set('brand', filters.brand.slug);
-				if (filters.model?.slug) params.set('model', filters.model.slug);
-				if (filters.year?.from) params.set('yearFrom', filters.year.from);
-				if (filters.year?.to) params.set('yearTo', filters.year.to);
-				if (filters.price?.from) params.set('priceFrom', filters.price.from);
-				if (filters.price?.to) params.set('priceTo', filters.price.to);
-				if (filters.range?.from) params.set('rangeFrom', filters.range.from);
-				if (filters.range?.to) params.set('rangeTo', filters.range.to);
-				if (filters.km?.from) params.set('kmFrom', filters.km.from);
-				if (filters.km?.to) params.set('kmTo', filters.km.to);
-				if (filters.power?.from) params.set('powerFrom', filters.power.from);
-				if (filters.power?.to) params.set('powerTo', filters.power.to);
-				if (filters.bodyType?.slug) params.set('bodyType', filters.bodyType.slug);
-				
-				searchFilterComponent.initializeFromUrlParams(params);
-			}
-		});
-	}
+		}
+	});
 </script>
 
 <svelte:head>
@@ -183,6 +245,27 @@
 							Showing results for <strong>{data.filters.model}</strong>
 						{/if}
 					</p>
+				</div>
+			{/if}
+
+			{#if pageState.error}
+				<div class="error-message">
+					<p class="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
+						⚠️ {pageState.error}
+					</p>
+				</div>
+			{/if}
+
+			{#if data.filterErrors && data.filterErrors.length > 0}
+				<div class="error-message">
+					<div class="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+						<p><strong>⚠️ Filter Warning:</strong></p>
+						<ul class="list-disc list-inside mt-2">
+							{#each data.filterErrors as error}
+								<li>{error}</li>
+							{/each}
+						</ul>
+					</div>
 				</div>
 			{/if}
 
@@ -234,14 +317,17 @@
         color: inherit;
     }
 
-    .filter-summary {
+    .filter-summary,
+    .error-message {
         margin-bottom: 25px;
     }
 
     @media (max-width: 750px) {
         .page-title,
-        .filter-summary {
+        .filter-summary,
+        .error-message {
             padding-left: 15px;
+            padding-right: 15px;
         }
         
         .page-title {
