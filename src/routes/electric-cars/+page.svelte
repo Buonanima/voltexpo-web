@@ -10,18 +10,26 @@
 	import { carsActions, likedCars } from '../store/posts';
 	import Header from './components/Header.svelte';
 	import { fetchPostList } from '$lib/api/post/fetchPostList/fetchPostList';
-	import { OrderDirection, OrderField, OrderingHelpers } from '$lib/api/post/fetchPostList/orderingHelpers';
+	import {
+		OrderDirection,
+		OrderField,
+		OrderingHelpers
+	} from '$lib/api/post/fetchPostList/orderingHelpers';
 	import type { FilterParams } from '$lib/components/filters/types';
-	
+
 	// Import filter state objects for direct initialization
-	import { searchFilterUtils, searchBrandState } from '$lib/components/filters/SearchPage/searchFilterState.svelte';
-	import { yearInputSvelte } from '$lib/components/filters/SearchPage/inputs/yearInput.svelte.js';
-	import { priceInputSvelte } from '$lib/components/filters/SearchPage/inputs/priceInput.svelte.js';
-	import { rangeInputSvelte } from '$lib/components/filters/SearchPage/inputs/rangeInput.svelte.js';
-	import { bodyTypeInputSvelte } from '$lib/components/filters/SearchPage/inputs/bodyTypeInput.svelte.js';
-	import { kmInputSvelte } from '$lib/components/filters/SearchPage/inputs/kmInput.svelte.js';
-	import { powerInputSvelte } from '$lib/components/filters/SearchPage/inputs/powerInput.svelte.js';
-	import { getBodyTypes } from '$lib/components/filters/cards/bodyTypeCard.svelte.js';
+	import {
+		searchFilterUtils,
+		searchBrandState,
+		searchModelState
+	} from '$lib/components/filters/SearchPage/searchFilterState.svelte';
+	import { yearInputSvelte } from '$lib/components/filters/SearchPage/inputs/yearInput.svelte';
+	import { priceInputSvelte } from '$lib/components/filters/SearchPage/inputs/priceInput.svelte';
+	import { rangeInputSvelte } from '$lib/components/filters/SearchPage/inputs/rangeInput.svelte';
+	import { bodyTypeInputSvelte } from '$lib/components/filters/SearchPage/inputs/bodyTypeInput.svelte';
+	import { kmInputSvelte } from '$lib/components/filters/SearchPage/inputs/kmInput.svelte';
+	import { powerInputSvelte } from '$lib/components/filters/SearchPage/inputs/powerInput.svelte';
+	import { getBodyTypes } from '$lib/components/filters/cards/bodyTypeCard.svelte';
 	import { getModelsById } from '$lib/api/model/getModelsById';
 	import { getBrandsList } from '$lib/api/brand/getBrandsList';
 
@@ -55,7 +63,7 @@
 
 			// Set other filters from parsed data
 			const filters = pageData.allFilters;
-			
+
 			if (filters.year) {
 				if (filters.year.from) yearInputSvelte.fromYear = parseInt(filters.year.from);
 				if (filters.year.to) yearInputSvelte.toYear = parseInt(filters.year.to);
@@ -83,12 +91,13 @@
 
 			if (filters.bodyType?.slug) {
 				// Find body type by slug and set it
-				const bodyType = getBodyTypes().find(bt => bt.value === filters.bodyType?.slug || bt.slug === filters.bodyType?.slug);
+				const bodyType = getBodyTypes().find(
+					(bt) => bt.value === filters.bodyType?.slug || bt.slug === filters.bodyType?.slug
+				);
 				if (bodyType) {
 					bodyTypeInputSvelte.selectedBodyType = bodyType;
 				}
 			}
-
 		} catch (error) {
 			console.error('Failed to initialize filter state from server data:', error);
 		}
@@ -117,25 +126,24 @@
 	// Filter handlers
 	async function handleSearch() {
 		if (!searchFilterComponent) return;
-		
+
 		pageState.isLoading = true;
-		
+
 		try {
 			// Clear any previous error
 			pageState.error = null;
-			
+
 			// Get current filters from SearchFilter component
 			const filters = searchFilterComponent.getCurrentFilters();
-			
+
 			// Fetch new results
 			const results = await fetchPostList({
 				filters,
 				ordering: OrderingHelpers.byFieldAndDirection(OrderField.TIME_POSTED, OrderDirection.DESC)
 			});
-			
+
 			// Update page state - ensure results is always an array
 			pageState.searchResults = results || [];
-			
 		} catch (error) {
 			console.error('Search failed:', error);
 			// Set empty results and show user-friendly message
@@ -151,7 +159,7 @@
 		if (searchTimeout) {
 			clearTimeout(searchTimeout);
 		}
-		
+
 		searchTimeout = setTimeout(async () => {
 			await handleSearch();
 		}, 300); // 300ms debounce
@@ -160,11 +168,11 @@
 	// Update URL immediately when filters change (without debounce)
 	function updateUrlFromFilters() {
 		if (!searchFilterComponent || !browser) return;
-		
+
 		try {
 			const searchParams = searchFilterComponent.generateUrlSearchParams();
-			const newUrl = `/electric-cars${ searchParams.toString() ? '?' + searchParams.toString() : '' }`;
-			
+			const newUrl = `/electric-cars${searchParams.toString() ? '?' + searchParams.toString() : ''}`;
+
 			// Update URL immediately without page reload
 			goto(newUrl, { replaceState: true, noScroll: true });
 		} catch (error) {
@@ -175,13 +183,13 @@
 	// Handle filter changes with immediate URL update and debounced search
 	function handleFiltersChange(filters: FilterParams) {
 		currentFilters = filters;
-		
+
 		// Only proceed with automatic updates if we're in the browser and have the component
 		if (!browser || !searchFilterComponent) return;
-		
+
 		// Update URL immediately for instant feedback
 		updateUrlFromFilters();
-		
+
 		// Trigger debounced search for results
 		debouncedSearch();
 	}
@@ -254,7 +262,7 @@
 
 	// Helper function to enrich cars with like state
 	function enrichCarsWithLikeState(cars: typeof data.searchResults) {
-		return cars.map(car => ({
+		return cars.map((car) => ({
 			...car,
 			isLiked: browser ? carsActions.isLiked(car.id, $likedCars) : false
 		}));
@@ -285,7 +293,7 @@
 		// Use current filter state for immediate updates, fallback to server data
 		const currentBrand = currentFilters.brand?.value || data.filters.brand;
 		const currentModel = currentFilters.model?.value || data.filters.model;
-		
+
 		if (currentBrand && currentModel) {
 			return `${currentBrand} ${currentModel}`;
 		} else if (currentBrand) {
@@ -300,7 +308,7 @@
 	// Watch for brand changes and load models accordingly
 	$effect(() => {
 		const currentBrandId = searchBrandState.selectedBrand?.id;
-		
+
 		// If brand changes and we don't have models for this brand, load them
 		// But only if models weren't already pre-loaded from server
 		if (currentBrandId && availableModels.length === 0 && !modelsLoading) {
@@ -318,20 +326,35 @@
 		}
 	});
 
+	// Reactive effect to automatically manage model state when brand changes
+	// (Moved from searchFilterState.svelte.ts because $effect can only be used inside a component context)
+	$effect(() => {
+		// Automatically disable model selection when no brand is selected
+		searchModelState.disabled = !searchBrandState.selectedBrand;
+
+		// Auto-clear model when brand is cleared (but not when brand is set)
+		if (!searchBrandState.selectedBrand && searchModelState.selectedModel) {
+			searchModelState.selectedModel = null;
+		}
+	});
+
 	// Handle client-side navigation (when user navigates without server data)
 	$effect(() => {
 		if (searchFilterComponent && browser) {
 			// Check if we have URL parameters
 			const urlParams = new URLSearchParams(window.location.search);
 			const hasUrlParams = Array.from(urlParams.keys()).length > 0;
-			
+
 			// Only use URL parsing for client-side navigation when we don't have server data
-			const hasServerData = data.resolvedBrandObject || data.resolvedModelObject || Object.keys(data.allFilters).length > 0;
-			
+			const hasServerData =
+				data.resolvedBrandObject ||
+				data.resolvedModelObject ||
+				Object.keys(data.allFilters).length > 0;
+
 			if (!hasServerData) {
 				if (hasUrlParams) {
 					// Fallback to URL parsing for client-side navigation
-					searchFilterComponent.initializeFromUrlParams(urlParams).catch(error => {
+					searchFilterComponent.initializeFromUrlParams(urlParams).catch((error) => {
 						console.error('Failed to initialize filters from URL:', error);
 					});
 				} else {
@@ -355,23 +378,23 @@
 	logInUrl={pageState.logInUrl}
 />
 
-<Header/>
+<Header />
 
 <div class="filter-container">
-	<SearchFilter 
+	<SearchFilter
 		bind:this={searchFilterComponent}
-		showMoreFilters={pageState.showMoreFilters} 
+		showMoreFilters={pageState.showMoreFilters}
 		onFiltersChange={handleFiltersChange}
-		availableModels={availableModels}
-		modelsLoading={modelsLoading}
-		modelsError={modelsError}
+		{availableModels}
+		{modelsLoading}
+		{modelsError}
 		onModelsRetry={handleModelsRetry}
-		availableBrands={availableBrands}
-		brandsLoading={brandsLoading}
-		brandsError={brandsError}
+		{availableBrands}
+		{brandsLoading}
+		{brandsError}
 		onBrandsRetry={handleBrandsRetry}
 	/>
-	<SearchFilterButtons 
+	<SearchFilterButtons
 		onSearch={handleSearch}
 		onToggleMoreFilters={handleToggleMoreFilters}
 		showMoreFilters={pageState.showMoreFilters}
@@ -382,18 +405,21 @@
 	<main class="content">
 		<section class="section">
 			<h1 class="page-title">{h1Title}</h1>
-			
+
 			{#if !pageState.isLoading}
 				<div class="filter-summary">
 					<p class="text-[17px] text-zinc-600 dark:text-zinc-400">
-						{searchResultsWithLikeState.length} {searchResultsWithLikeState.length === 1 ? 'result' : 'results'}
+						{searchResultsWithLikeState.length}
+						{searchResultsWithLikeState.length === 1 ? 'result' : 'results'}
 					</p>
 				</div>
 			{/if}
 
 			{#if pageState.error}
 				<div class="error-message">
-					<p class="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
+					<p
+						class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400"
+					>
 						⚠️ {pageState.error}
 					</p>
 				</div>
@@ -401,9 +427,11 @@
 
 			{#if data.filterErrors && data.filterErrors.length > 0}
 				<div class="error-message">
-					<div class="text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
+					<div
+						class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-600 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400"
+					>
 						<p><strong>⚠️ Filter Warning:</strong></p>
-						<ul class="list-disc list-inside mt-2">
+						<ul class="mt-2 list-inside list-disc">
 							{#each data.filterErrors as error}
 								<li>{error}</li>
 							{/each}
@@ -415,8 +443,11 @@
 			<!-- Loading spinner for loading state -->
 			{#if pageState.isLoading}
 				<div class="loading-state">
-					<div class="flex items-center justify-center" style="padding-top: 50px; min-height: 200px;">
-						<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+					<div
+						class="flex items-center justify-center"
+						style="padding-top: 50px; min-height: 200px;"
+					>
+						<div class="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
 					</div>
 				</div>
 			{:else if hasResults}
@@ -436,64 +467,64 @@
 </div>
 
 <style>
-    .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 2rem 15px;
-    }
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 2rem 15px;
+	}
 
-    .filter-container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 0 15px 2rem;
-    }
+	.filter-container {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 0 15px 2rem;
+	}
 
-    @media (max-width: 750px) {
-        .container,
-        .filter-container {
-            padding-left: 0;
-            padding-right: 0;
-        }
-    }
+	@media (max-width: 750px) {
+		.container,
+		.filter-container {
+			padding-left: 0;
+			padding-right: 0;
+		}
+	}
 
-    .section {
-        margin-bottom: 3rem;
-    }
+	.section {
+		margin-bottom: 3rem;
+	}
 
-    .page-title {
-        font-size: 32px;
-        font-weight: 700;
-        margin-bottom: 10px;
-        color: inherit;
-    }
+	.page-title {
+		font-size: 32px;
+		font-weight: 700;
+		margin-bottom: 10px;
+		color: inherit;
+	}
 
-    .filter-summary,
-    .error-message {
-        margin-bottom: 25px;
-    }
+	.filter-summary,
+	.error-message {
+		margin-bottom: 25px;
+	}
 
-    @media (max-width: 750px) {
-        .page-title,
-        .filter-summary,
-        .error-message {
-            padding-left: 15px;
-            padding-right: 15px;
-        }
-        
-        .page-title {
-            font-size: 28px;
-        }
-    }
+	@media (max-width: 750px) {
+		.page-title,
+		.filter-summary,
+		.error-message {
+			padding-left: 15px;
+			padding-right: 15px;
+		}
 
-    .cars-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5625rem; /* 25px */
-    }
+		.page-title {
+			font-size: 28px;
+		}
+	}
 
-    @media (max-width: 750px) {
-        .cars-grid {
-            gap: 2.5rem; /* 40px */
-        }
-    }
+	.cars-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5625rem; /* 25px */
+	}
+
+	@media (max-width: 750px) {
+		.cars-grid {
+			gap: 2.5rem; /* 40px */
+		}
+	}
 </style>

@@ -1,16 +1,20 @@
 <!-- components/filters/SearchPage/BodyTypeInput.svelte -->
 <script lang="ts">
 	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
-	import { bodyTypeInputSvelte } from './bodyTypeInput.svelte.js';
+	import { bodyTypeInputSvelte } from './bodyTypeInput.svelte.ts';
 
 	// Props
-	const { disabled = false, onOpen, onClear, onChange } = $props<{
+	const {
+		disabled = false,
+		onOpen,
+		onClear,
+		onChange
+	} = $props<{
 		disabled?: boolean;
 		onOpen?: () => void;
 		onClear?: () => void;
 		onChange?: (value: string | null) => void;
 	}>();
-
 
 	// Derived values using runes
 	const displayValue = $derived(bodyTypeInputSvelte.displayValue);
@@ -21,7 +25,6 @@
 		if (disabled) return;
 		onOpen?.();
 	}
-
 
 	function handleClearBodyType(event: Event): void {
 		if (disabled) return;
@@ -44,18 +47,20 @@
 
 <div
 	id="filter_minimal_input_container_body_type"
-	class="flex flex-row flex-nowrap border border-zinc-200 dark:border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 z-0 hover:z-[1] overflow-hidden hover:cursor-pointer mr-[-1px] mb-[-1px] rounded-br-[20px] cursor-pointer transition-[border-color] duration-150"
+	class="z-0 mb-[-1px] mr-[-1px] flex cursor-pointer flex-row flex-nowrap overflow-hidden rounded-br-[20px] border border-zinc-200 transition-[border-color] duration-150 hover:z-[1] hover:cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-600 dark:hover:border-zinc-400 dark:hover:bg-zinc-900"
 	role="button"
 	tabindex={disabled ? -1 : 0}
 	aria-haspopup="dialog"
 	aria-disabled={disabled}
 	onclick={handleOpenBodyTypeCard}
-	onkeydown={()=>{}}
+	onkeydown={() => {}}
 >
-	<div class="w-full pl-[15px] pr-[10px] py-[8px] flex flex-col">
+	<div class="flex w-full flex-col py-[8px] pl-[15px] pr-[10px]">
 		<label
 			for="filter_minimal_input_body_type"
-			class="block text-[15px] max-[750px]:text-[14px] text-zinc-800 dark:text-white hover:cursor-pointer {disabled ? 'cursor-not-allowed' : 'cursor-pointer'}"
+			class="block text-[15px] text-zinc-800 hover:cursor-pointer dark:text-white max-[750px]:text-[14px] {disabled
+				? 'cursor-not-allowed'
+				: 'cursor-pointer'}"
 		>
 			Body Type
 		</label>
@@ -68,11 +73,11 @@
 				id="filter_minimal_input_body_type"
 				value={displayValue}
 				{disabled}
-				class="block w-full p-0 border-0 bg-transparent
-					ring-0 focus:ring-0
-					text-[15px] max-[750px]:text-[14px]
-					text-zinc-800 dark:text-white
-					placeholder:text-zinc-400 outline-none hover:cursor-pointer
+				class="block w-full border-0 bg-transparent p-0
+					text-[15px] text-zinc-800
+					outline-none ring-0
+					placeholder:text-zinc-400 hover:cursor-pointer
+					focus:ring-0 dark:text-white max-[750px]:text-[14px]
 					{disabled ? 'cursor-not-allowed' : 'cursor-pointer'}"
 				placeholder="Select"
 				aria-describedby={showCross ? 'filter_minimal_input_body_type_clear_hint' : undefined}
@@ -89,10 +94,12 @@
 		<button
 			type="button"
 			id="filter_minimal_input_body_type_cross"
-			class="px-[10px] flex justify-center items-center hover:bg-red-300/50
-				focus:bg-red-300/50 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-inset
-				cursor-pointer transition-colors duration-200 rounded-br-[20px]
-				{disabled ? 'opacity-50 cursor-not-allowed hover:bg-transparent focus:bg-transparent focus:ring-0' : ''}"
+			class="flex cursor-pointer items-center justify-center rounded-br-[20px]
+				px-[10px] transition-colors duration-200 hover:bg-red-300/50 focus:bg-red-300/50
+				focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-400
+				{disabled
+				? 'cursor-not-allowed opacity-50 hover:bg-transparent focus:bg-transparent focus:ring-0'
+				: ''}"
 			{disabled}
 			onclick={handleClearBodyType}
 			onkeydown={handleClearKeydown}
@@ -103,7 +110,6 @@
 		</button>
 	{/if}
 </div>
-
 
 <style>
 	.sr-only {

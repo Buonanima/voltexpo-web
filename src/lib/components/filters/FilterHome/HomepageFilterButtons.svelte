@@ -4,60 +4,68 @@
 
 	function handleSearch() {
 		const params = new URLSearchParams();
-		
+
 		if (homeBrandState.selectedBrand) {
 			params.set('brand', homeBrandState.selectedBrand.slug);
 		}
-		
+
 		if (homeModelState.selectedModel) {
 			params.set('model', homeModelState.selectedModel.slug);
 		}
-		
+
 		const queryString = params.toString();
 		const url = queryString ? `/electric-cars?${queryString}` : '/electric-cars';
-		
+
 		goto(url);
 	}
 </script>
 
-<div class='w-full max-[750px]:px-[15px]'>
-    <div class='flex flex-row
-              grid grid-cols-3
-              max-[750px]:grid-cols-2
-              rounded-[15px]'>
+<div class="w-full max-[750px]:px-[15px]">
+	<div
+		class="flex grid
+              grid-cols-3 flex-row
+              rounded-[15px]
+              max-[750px]:grid-cols-2"
+	>
+		<button onclick={handleSearch}>
+			<div
+				id="advanced_search_button"
+				class="
+             mr-[-1px] flex h-[44px]
+             w-full items-center justify-center gap-[10px]
+             rounded-full bg-zinc-100
+             text-[15px] text-zinc-800
+             transition-all duration-150
+             hover:cursor-pointer hover:bg-zinc-200
+             hover:text-zinc-900 dark:bg-zinc-900
+             dark:text-zinc-100 dark:hover:bg-zinc-850
+             dark:hover:text-white
+             max-[750px]:rounded-r-none
+             max-[750px]:text-[14px]"
+			>
+				<span id="advanced_search_button_text">Advanced Search</span>
+			</div>
+		</button>
 
-        <button onclick={handleSearch}>
-            <div id='advanced_search_button' class='
-             w-full mr-[-1px] h-[44px]
-             flex justify-center items-center gap-[10px]
-             text-[15px] max-[750px]:text-[14px]
-             text-zinc-800 hover:text-zinc-900
-             dark:text-zinc-100 dark:hover:text-white
-             bg-zinc-100 hover:bg-zinc-200
-             dark:bg-zinc-900 dark:hover:bg-zinc-850
-             rounded-full max-[750px]:rounded-r-none
-             hover:cursor-pointer
-             transition-all
-             duration-150'>
-                <span id="advanced_search_button_text">Advanced Search</span>
-            </div>
-        </button>
+		<div class="w-full max-[750px]:hidden"></div>
 
-        <div class='w-full max-[750px]:hidden'></div>
-
-        <button onclick={handleSearch}>
-            <div id='search_button'
-                 class='h-[44px]
-                    flex items-center justify-center
-                    rounded-full max-[750px]:rounded-l-none
-                    bg-brand-blue_light_2 hover:bg-brand-blue
-                    dark:bg-brand-blue_dark dark:hover:bg-brand-blue
-                    cursor-pointer duration-150'
-            >
-                <div id='search_button_text' class='text-[16px] max-[750px]:text-[15px] text-white font-[500]'> Search
-                </div>
-            </div>
-        </button>
-
-    </div>
+		<button onclick={handleSearch}>
+			<div
+				id="search_button"
+				class="flex
+                    h-[44px] cursor-pointer items-center
+                    justify-center rounded-full
+                    bg-brand-blue_light_2 duration-150
+                    hover:bg-brand-blue dark:bg-brand-blue_dark
+                    dark:hover:bg-brand-blue max-[750px]:rounded-l-none"
+			>
+				<div
+					id="search_button_text"
+					class="text-[16px] font-[500] text-white max-[750px]:text-[15px]"
+				>
+					Search
+				</div>
+			</div>
+		</button>
+	</div>
 </div>

@@ -5,7 +5,7 @@ export const likedCars = writable<Set<number>>(new Set());
 
 export const carsActions = {
 	toggleLike(carId: number) {
-		likedCars.update(liked => {
+		likedCars.update((liked) => {
 			const newLiked = new Set(liked);
 			if (newLiked.has(carId)) {
 				newLiked.delete(carId);

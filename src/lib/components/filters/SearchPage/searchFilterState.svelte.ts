@@ -14,7 +14,7 @@ export const searchBrandState = $state<{
 	selectedBrand: null
 });
 
-// Search page scoped model filter state  
+// Search page scoped model filter state
 export const searchModelState = $state<{
 	selectedModel: Model | null;
 	disabled: boolean;
@@ -36,41 +36,62 @@ export const searchFilterState = {
 	 */
 	get currentFilters(): FilterParams {
 		return {
-			brand: searchBrandState.selectedBrand ? {
-				id: searchBrandState.selectedBrand.id,
-				value: searchBrandState.selectedBrand.brand_name,
-				slug: searchBrandState.selectedBrand.slug
-			} : undefined,
-			model: searchModelState.selectedModel ? {
-				id: searchModelState.selectedModel.id,
-				value: searchModelState.selectedModel.model_name,
-				slug: searchModelState.selectedModel.slug
-			} : undefined,
-			year: yearInputSvelte.values.from || yearInputSvelte.values.to ? {
-				from: yearInputSvelte.values.from?.toString(),
-				to: yearInputSvelte.values.to?.toString()
-			} : undefined,
-			price: priceInputSvelte.values.from || priceInputSvelte.values.to ? {
-				from: priceInputSvelte.values.from?.toString(),
-				to: priceInputSvelte.values.to?.toString()
-			} : undefined,
-			range: rangeInputSvelte.values.from || rangeInputSvelte.values.to ? {
-				from: rangeInputSvelte.values.from?.toString(),
-				to: rangeInputSvelte.values.to?.toString()
-			} : undefined,
-			km: kmInputSvelte.values.from || kmInputSvelte.values.to ? {
-				from: kmInputSvelte.values.from?.toString(),
-				to: kmInputSvelte.values.to?.toString()
-			} : undefined,
-			power: powerInputSvelte.values.from || powerInputSvelte.values.to ? {
-				from: powerInputSvelte.values.from?.toString(),
-				to: powerInputSvelte.values.to?.toString()
-			} : undefined,
-			bodyType: bodyTypeInputSvelte.selectedBodyType ? {
-				id: bodyTypeInputSvelte.selectedBodyType.id,
-				value: bodyTypeInputSvelte.selectedBodyType.value,
-				slug: bodyTypeInputSvelte.selectedBodyType.slug
-			} : undefined
+			brand: searchBrandState.selectedBrand
+				? {
+						id: searchBrandState.selectedBrand.id,
+						value: searchBrandState.selectedBrand.brand_name,
+						slug: searchBrandState.selectedBrand.slug
+					}
+				: undefined,
+			model: searchModelState.selectedModel
+				? {
+						id: searchModelState.selectedModel.id,
+						value: searchModelState.selectedModel.model_name,
+						slug: searchModelState.selectedModel.slug
+					}
+				: undefined,
+			year:
+				yearInputSvelte.values.from || yearInputSvelte.values.to
+					? {
+							from: yearInputSvelte.values.from?.toString(),
+							to: yearInputSvelte.values.to?.toString()
+						}
+					: undefined,
+			price:
+				priceInputSvelte.values.from || priceInputSvelte.values.to
+					? {
+							from: priceInputSvelte.values.from?.toString(),
+							to: priceInputSvelte.values.to?.toString()
+						}
+					: undefined,
+			range:
+				rangeInputSvelte.values.from || rangeInputSvelte.values.to
+					? {
+							from: rangeInputSvelte.values.from?.toString(),
+							to: rangeInputSvelte.values.to?.toString()
+						}
+					: undefined,
+			km:
+				kmInputSvelte.values.from || kmInputSvelte.values.to
+					? {
+							from: kmInputSvelte.values.from?.toString(),
+							to: kmInputSvelte.values.to?.toString()
+						}
+					: undefined,
+			power:
+				powerInputSvelte.values.from || powerInputSvelte.values.to
+					? {
+							from: powerInputSvelte.values.from?.toString(),
+							to: powerInputSvelte.values.to?.toString()
+						}
+					: undefined,
+			bodyType: bodyTypeInputSvelte.selectedBodyType
+				? {
+						id: bodyTypeInputSvelte.selectedBodyType.id,
+						value: bodyTypeInputSvelte.selectedBodyType.value,
+						slug: bodyTypeInputSvelte.selectedBodyType.slug
+					}
+				: undefined
 		};
 	}
 };
@@ -83,21 +104,25 @@ export const searchFilterUtils = {
 		searchModelState.selectedModel = resetState.selectedModel;
 		searchModelState.disabled = resetState.disabled;
 	},
-	
+
 	resetModel() {
 		const modelUpdate = createModelUpdate(null);
 		searchModelState.selectedModel = modelUpdate.selectedModel;
 	},
-	
+
 	setBrand(brand: Brand | null) {
 		const brandUpdate = createBrandUpdate(brand);
 		searchBrandState.selectedBrand = brandUpdate.selectedBrand;
 		searchModelState.selectedModel = brandUpdate.modelUpdate.selectedModel;
 		searchModelState.disabled = brandUpdate.modelUpdate.disabled;
 	},
-	
+
 	setModel(model: Model | null) {
 		const modelUpdate = createModelUpdate(model);
 		searchModelState.selectedModel = modelUpdate.selectedModel;
 	}
 };
+
+// Note: The reactive effect for automatically managing model state when brand changes
+// has been moved to the component that uses this state (electric-cars/+page.svelte)
+// This is because $effect can only be used inside a component context in Svelte 5

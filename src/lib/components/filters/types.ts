@@ -8,6 +8,7 @@ export interface Model {
 	id: number;
 	model_name: string;
 	slug: string;
+	brand_id: number;
 }
 
 export interface IDValue {

@@ -25,5 +25,4 @@ const complexQuery = await fetchPostList({
 	excludedIds: [15, 28, 44, 102],
 	limit: 20
 });
-
 ```

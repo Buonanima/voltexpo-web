@@ -39,7 +39,7 @@ export function handleFetchError(response: Response, operation: string): Error {
  * Standardized 404 handling - determines if 404 should be treated as error
  */
 export function handle404<T>(
-	response: Response, 
+	response: Response,
 	treatAsError: boolean = false,
 	fallbackData: T
 ): ApiResponse<T> | null {

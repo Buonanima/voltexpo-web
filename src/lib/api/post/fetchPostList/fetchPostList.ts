@@ -28,7 +28,7 @@ export async function fetchPostList(options: FetchPostListOptions = {}): Promise
 		const response = await fetch(`${config.API_BASE_URL}/get-car-list-json`, {
 			method: 'POST',
 			headers: {
-				'Accept': 'application/json',
+				Accept: 'application/json',
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify(requestBody)

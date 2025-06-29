@@ -65,5 +65,3 @@ export interface TechnicalSpecs {
 	charging: ChargingSpecs;
 	dimensions: DimensionsSpecs;
 }
-
-

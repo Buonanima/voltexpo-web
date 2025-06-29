@@ -20,7 +20,7 @@ export function getStringParam(searchParams: URLSearchParams, key: string): stri
 export function getIntParam(searchParams: URLSearchParams, key: string): number | null {
 	const value = searchParams.get(key);
 	if (!value) return null;
-	
+
 	const parsed = parseInt(value, 10);
 	return isNaN(parsed) ? null : parsed;
 }
@@ -60,9 +60,9 @@ export function setBodyTypeParam(params: URLSearchParams, bodyType: BodyType | n
  * Dedicated function for range-based filters (year, price, km, etc.)
  */
 export function setRangeParams(
-	params: URLSearchParams, 
-	prefix: string, 
-	fromValue: number | null, 
+	params: URLSearchParams,
+	prefix: string,
+	fromValue: number | null,
 	toValue: number | null
 ): void {
 	if (fromValue !== null && fromValue !== undefined) {
@@ -77,7 +77,7 @@ export function setRangeParams(
  * Extracts range values from URL parameters
  */
 export function getRangeFromParams(
-	searchParams: URLSearchParams, 
+	searchParams: URLSearchParams,
 	prefix: string
 ): { from: number | null; to: number | null } {
 	return {

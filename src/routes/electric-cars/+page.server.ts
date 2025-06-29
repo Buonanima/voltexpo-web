@@ -1,6 +1,10 @@
 import type { PageServerLoad } from './$types';
 import { fetchPostList } from '$lib/api/post/fetchPostList/fetchPostList';
-import { OrderDirection, OrderField, OrderingHelpers } from '$lib/api/post/fetchPostList/orderingHelpers';
+import {
+	OrderDirection,
+	OrderField,
+	OrderingHelpers
+} from '$lib/api/post/fetchPostList/orderingHelpers';
 import { getBrandBySlug } from '$lib/api/brand/getBrandBySlug';
 import { getBrandsList } from '$lib/api/brand/getBrandsList';
 import { getModelBySlug } from '$lib/api/model/getModelBySlug';
@@ -8,11 +12,13 @@ import { getModelsById } from '$lib/api/model/getModelsById';
 import type { Brand, Model, FilterParams } from '$lib/components/filters/types';
 
 // Helper function to resolve brand and model objects from slugs
-async function resolveBrandAndModel(searchParams: URLSearchParams): Promise<{ brand: Brand | null; model: Model | null; errors: string[] }> {
+async function resolveBrandAndModel(
+	searchParams: URLSearchParams
+): Promise<{ brand: Brand | null; model: Model | null; errors: string[] }> {
 	const brandSlug = searchParams.get('brand');
 	const modelSlug = searchParams.get('model');
 	const errors: string[] = [];
-	
+
 	let brand: Brand | null = null;
 	let model: Model | null = null;
 
@@ -48,9 +54,14 @@ async function resolveBrandAndModel(searchParams: URLSearchParams): Promise<{ br
 }
 
 // Helper function to parse URL parameters into FilterParams
-async function parseFiltersFromUrl(searchParams: URLSearchParams): Promise<{ filters: FilterParams; resolvedBrand: Brand | null; resolvedModel: Model | null; errors: string[] }> {
+async function parseFiltersFromUrl(searchParams: URLSearchParams): Promise<{
+	filters: FilterParams;
+	resolvedBrand: Brand | null;
+	resolvedModel: Model | null;
+	errors: string[];
+}> {
 	const filters: FilterParams = {};
-	
+
 	// Resolve brand and model objects
 	const { brand, model, errors } = await resolveBrandAndModel(searchParams);
 
@@ -134,8 +145,10 @@ async function parseFiltersFromUrl(searchParams: URLSearchParams): Promise<{ fil
 export const load: PageServerLoad = async ({ url }) => {
 	try {
 		// Parse all filters from URL parameters (now async)
-		const { filters, resolvedBrand, resolvedModel, errors } = await parseFiltersFromUrl(url.searchParams);
-		
+		const { filters, resolvedBrand, resolvedModel, errors } = await parseFiltersFromUrl(
+			url.searchParams
+		);
+
 		// Log any errors (invalid slugs) but continue
 		if (errors.length > 0) {
 			console.warn('Filter resolution errors:', errors);

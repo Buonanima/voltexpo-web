@@ -1,19 +1,18 @@
 import type { PageServerLoad } from './$types';
 import { extractCarIds } from '$lib/api/post/fetchPostList/excludeIDsHelpers';
 import { fetchPostList } from '$lib/api/post/fetchPostList/fetchPostList';
-import { OrderDirection, OrderField, OrderingHelpers } from '$lib/api/post/fetchPostList/orderingHelpers';
+import {
+	OrderDirection,
+	OrderField,
+	OrderingHelpers
+} from '$lib/api/post/fetchPostList/orderingHelpers';
 import { getBrandsList } from '$lib/api/brand/getBrandsList';
 import type { Brand } from '$lib/components/filters/types';
-
 
 export const load: PageServerLoad = async () => {
 	try {
 		// Fetch all data in parallel for better performance
-		const [
-			popularCarsResult,
-			recentCarsResult,
-			brandsResult
-		] = await Promise.allSettled([
+		const [popularCarsResult, recentCarsResult, brandsResult] = await Promise.allSettled([
 			fetchPostList({
 				ordering: OrderingHelpers.byFieldAndDirection(OrderField.VIEWS, OrderDirection.DESC),
 				limit: 4
@@ -27,11 +26,11 @@ export const load: PageServerLoad = async () => {
 
 		// Extract popular cars
 		const popularCars = popularCarsResult.status === 'fulfilled' ? popularCarsResult.value : [];
-		
+
 		// Extract recent cars, excluding popular ones
 		const popularCarIds = extractCarIds(popularCars);
 		const recentCarsTemp = recentCarsResult.status === 'fulfilled' ? recentCarsResult.value : [];
-		const recentCars = recentCarsTemp.filter(car => !popularCarIds.includes(car.id));
+		const recentCars = recentCarsTemp.filter((car) => !popularCarIds.includes(car.id));
 
 		// Extract IDs from recent cars
 		const recentCarIds = extractCarIds(recentCars);

@@ -8,14 +8,14 @@ import { powerInputSvelte } from './inputs/powerInput.svelte.js';
 import { getBodyTypes } from '../cards/bodyTypeCard.svelte.js';
 import { getBrandBySlug } from '$lib/api/brand/getBrandBySlug';
 import { getModelBySlug } from '$lib/api/model/getModelBySlug';
-import { 
-	getStringParam, 
-	getIntParam, 
-	setBrandParam, 
-	setModelParam, 
+import {
+	getStringParam,
+	getIntParam,
+	setBrandParam,
+	setModelParam,
 	setBodyTypeParam,
-	setRangeParams, 
-	extractFilterParams 
+	setRangeParams,
+	extractFilterParams
 } from '../shared/urlParamUtils';
 
 /**
@@ -37,7 +37,7 @@ export class SearchFilterUrlParams {
 				const { data: brand, error } = await getBrandBySlug(filterParams.brand);
 				if (brand && !error) {
 					searchFilterUtils.setBrand(brand);
-					
+
 					// Now that brand is set, initialize model if present
 					if (filterParams.model) {
 						try {
@@ -77,7 +77,9 @@ export class SearchFilterUrlParams {
 
 		// Initialize body type
 		if (filterParams.bodyType) {
-			const bodyType = getBodyTypes().find(bt => bt.value === filterParams.bodyType || bt.slug === filterParams.bodyType);
+			const bodyType = getBodyTypes().find(
+				(bt) => bt.value === filterParams.bodyType || bt.slug === filterParams.bodyType
+			);
 			if (bodyType) {
 				bodyTypeInputSvelte.selectedBodyType = bodyType;
 			}

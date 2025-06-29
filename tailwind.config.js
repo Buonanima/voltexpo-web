@@ -9,12 +9,12 @@ export default {
 		extend: {
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'
 			},
 			colors: {
 				zinc: {
 					850: '#202023',
-					925: '#111113',
+					925: '#111113'
 				},
 				brand: {
 					bgDark: '#121212',
@@ -42,16 +42,16 @@ export default {
 					green: '#0BA160',
 					green_text: '#148e58',
 					green_dark: '#07663D',
-					green_dark_2: '#054429',
+					green_dark_2: '#054429'
 				},
 				text: {
-					50: '#505050',
-				},
+					50: '#505050'
+				}
 			},
 			fontFamily: {
-				sans: ['Inter var', ...defaultTheme.fontFamily.sans],
-			},
-		},
+				sans: ['Inter var', ...defaultTheme.fontFamily.sans]
+			}
+		}
 	},
-	plugins: [tailwind_scrollbar({ nocompatible: true })],
+	plugins: [tailwind_scrollbar({ nocompatible: true })]
 };

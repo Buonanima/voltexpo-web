@@ -9,12 +9,12 @@
 	import FireIcon from '$lib/components/shared/icons/FireIcon.svelte';
 	import ClockIcon from '$lib/components/shared/icons/ClockIcon.svelte';
 	import FilterHome from '$lib/components/filters/FilterHome/FilterHome.svelte';
-import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFilterButtons.svelte';
+	import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFilterButtons.svelte';
 	import { carsActions, likedCars } from './store/posts';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
 	import { getModelsById } from '$lib/api/model/getModelsById';
 	import { getBrandsList } from '$lib/api/brand/getBrandsList';
-	import { homeBrandState } from '$lib/components/filters/FilterHome/homeFilterState.svelte';
+	import { homeBrandState, homeModelState } from '$lib/components/filters/FilterHome/homeFilterState.svelte';
 
 	const { data }: { data: PageData } = $props();
 
@@ -35,7 +35,7 @@ import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFi
 
 	// Helper function to enrich cars with like state
 	function enrichCarsWithLikeState(cars: typeof data.popularCars) {
-		return cars.map(car => ({
+		return cars.map((car) => ({
 			...car,
 			isLiked: browser ? carsActions.isLiked(car.id, $likedCars) : false
 		}));
@@ -120,6 +120,18 @@ import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFi
 			loadBrands();
 		}
 	});
+
+	// Reactive effect to automatically manage model state when brand changes
+	// (Moved from homeFilterState.svelte.ts because $effect can only be used inside a component context)
+	$effect(() => {
+		// Automatically disable model selection when no brand is selected
+		homeModelState.disabled = !homeBrandState.selectedBrand;
+
+		// Auto-clear model when brand is cleared (but not when brand is set)
+		if (!homeBrandState.selectedBrand && homeModelState.selectedModel) {
+			homeModelState.selectedModel = null;
+		}
+	});
 </script>
 
 <svelte:head>
@@ -135,17 +147,17 @@ import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFi
 />
 
 <header>
-	<HomepageHeading/>
+	<HomepageHeading />
 </header>
 
 <div class="filter-container">
-	<FilterHome 
-		availableBrands={availableBrands}
-		availableModels={availableModels}
-		modelsLoading={modelsLoading}
-		modelsError={modelsError}
-		brandsLoading={brandsLoading}
-		brandsError={brandsError}
+	<FilterHome
+		{availableBrands}
+		{availableModels}
+		{modelsLoading}
+		{modelsError}
+		{brandsLoading}
+		{brandsError}
 		onLoadModels={loadModelsForBrand}
 		onBrandsRetry={handleBrandsRetry}
 		onModelsRetry={handleModelsRetry}
@@ -158,7 +170,10 @@ import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFi
 		{#if hasPopularCars || hasRecentCars || hasAllCars}
 			{#if hasPopularCars}
 				<section class="section">
-					<div class="flex flex-row items-center section-title gap-[12px]"><FireIcon/><h2>Popular</h2></div>
+					<div class="section-title flex flex-row items-center gap-[12px]">
+						<FireIcon />
+						<h2>Popular</h2>
+					</div>
 					<div class="cars-grid">
 						{#each popularCarsWithLikeState as car (car.id)}
 							<PostCard {car} />
@@ -169,7 +184,10 @@ import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFi
 
 			{#if hasRecentCars}
 				<section class="section">
-					<div class="flex flex-row items-center section-title gap-[12px]"><ClockIcon/><h2>Recent</h2></div>
+					<div class="section-title flex flex-row items-center gap-[12px]">
+						<ClockIcon />
+						<h2>Recent</h2>
+					</div>
 					<div class="cars-grid">
 						{#each recentCarsWithLikeState as car (car.id)}
 							<PostCard {car} />
@@ -198,51 +216,51 @@ import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFi
 </div>
 
 <style>
-    .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 2rem 15px;
-    }
+	.container {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 2rem 15px;
+	}
 
-    .filter-container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 0 15px 2rem;
-    }
+	.filter-container {
+		max-width: 1100px;
+		margin: 0 auto;
+		padding: 0 15px 2rem;
+	}
 
-    @media (max-width: 750px) {
-        .container,
-        .filter-container {
-            padding-left: 0;
-            padding-right: 0;
-        }
-    }
+	@media (max-width: 750px) {
+		.container,
+		.filter-container {
+			padding-left: 0;
+			padding-right: 0;
+		}
+	}
 
-    .section {
-        margin-bottom: 3rem;
-    }
+	.section {
+		margin-bottom: 3rem;
+	}
 
-    .section-title {
-        font-size: 24px;
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
+	.section-title {
+		font-size: 24px;
+		font-weight: 600;
+		margin-bottom: 15px;
+	}
 
-    @media (max-width: 750px) {
-        .section-title {
-            padding-left: 15px;
-        }
-    }
+	@media (max-width: 750px) {
+		.section-title {
+			padding-left: 15px;
+		}
+	}
 
-    .cars-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5625rem; /* 25px */
-    }
+	.cars-grid {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5625rem; /* 25px */
+	}
 
-    @media (max-width: 750px) {
-        .cars-grid {
-            gap: 2.5rem; /* 40px */
-        }
-    }
+	@media (max-width: 750px) {
+		.cars-grid {
+			gap: 2.5rem; /* 40px */
+		}
+	}
 </style>

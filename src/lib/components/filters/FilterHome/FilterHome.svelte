@@ -7,7 +7,7 @@
 	import type { Brand, Model } from '../types';
 
 	// Props for data and handlers
-	const { 
+	const {
 		availableBrands = [],
 		availableModels = [],
 		modelsLoading = false,
@@ -42,7 +42,7 @@
 		// Update local filter state
 		homeFilterUtils.setBrand(brand);
 		brandCardOpen = false;
-		
+
 		// Load models for the selected brand
 		if (onLoadModels) {
 			await onLoadModels(brand.id);
@@ -52,7 +52,7 @@
 	function handleBrandClear() {
 		// Reset brand and model state
 		homeFilterUtils.resetBrand();
-		
+
 		// Clear models when brand is cleared
 		if (onLoadModels) {
 			onLoadModels(null);
@@ -87,15 +87,14 @@
 			onModelsRetry();
 		}
 	}
-
 </script>
 
 <div
 	id="filter_minimal"
-	class="w-full max-[750px]:px-[15px] pt-[20px] pb-[20px]
-           flex flex-row items-center max-[750px]:flex-col gap-[15px]"
+	class="flex w-full flex-row items-center
+           gap-[15px] pb-[20px] pt-[20px] max-[750px]:flex-col max-[750px]:px-[15px]"
 >
-	<div class="w-full flex flex-row">
+	<div class="flex w-full flex-row">
 		<BrandInput
 			value={homeBrandState.selectedBrand?.brand_name || ''}
 			variant="home"

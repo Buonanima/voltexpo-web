@@ -1,9 +1,13 @@
 <!-- components/filters/SearchPage/PowerInput.svelte -->
 <script lang="ts">
-	import { powerInputSvelte } from './powerInput.svelte.js';
+	import { powerInputSvelte } from './powerInput.svelte.ts';
 
 	// Props
-	const { disabled = false, onClear, onChange } = $props<{
+	const {
+		disabled = false,
+		onClear,
+		onChange
+	} = $props<{
 		disabled?: boolean;
 		onClear?: () => void;
 		onChange?: (from: number | null, to: number | null) => void;
@@ -41,14 +45,19 @@
 
 <div
 	id="filter_minimal_input_container_power"
-	class="flex flex-row flex-nowrap border border-zinc-200 dark:border-zinc-600 hover:border-zinc-400 dark:hover:border-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900 z-0 hover:z-[1] mr-[-1px] mb-[-1px] transition-[border-color] duration-150 overflow-hidden hover:cursor-pointer rounded-r-[16px]"
+	class="z-0 mb-[-1px] mr-[-1px] flex flex-row flex-nowrap overflow-hidden rounded-r-[16px] border border-zinc-200 transition-[border-color] duration-150 hover:z-[1] hover:cursor-pointer hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-600 dark:hover:border-zinc-400 dark:hover:bg-zinc-900"
 >
 	<div
 		id="filter_minimal_input_container_power_from"
-		class="w-full pl-[15px] py-[8px] flex flex-col flex-nowrap"
+		class="flex w-full flex-col flex-nowrap py-[8px] pl-[15px]"
 	>
-		<label for="filter_minimal_input_power_from" class="block text-[15px] max-[750px]:text-[14px] text-zinc-800 dark:text-white hover:cursor-pointer">
-			Power <span class="text-[14px] max-[750px]:text-[13px] text-zinc-500 dark:text-zinc-400">HP</span>
+		<label
+			for="filter_minimal_input_power_from"
+			class="block text-[15px] text-zinc-800 hover:cursor-pointer dark:text-white max-[750px]:text-[14px]"
+		>
+			Power <span class="text-[14px] text-zinc-500 dark:text-zinc-400 max-[750px]:text-[13px]"
+				>HP</span
+			>
 		</label>
 		<input
 			type="number"
@@ -57,16 +66,16 @@
 			value={fromValue || ''}
 			{disabled}
 			class="number-input
+				block
+				w-full border-0
+				border-b-[1px]
+				border-transparent bg-transparent p-0 text-[15px]
+				text-zinc-800
+				outline-none placeholder:text-zinc-400
+				hover:cursor-pointer focus:border-brand-blue_light
 				focus:ring-0
-				border-b-[1px] border-transparent
-				focus:border-brand-blue_light
-				block w-full border-0 p-0
-				bg-transparent
-				text-[15px] max-[750px]:text-[14px]
-				text-zinc-800 dark:text-white
-				placeholder:text-zinc-400
-				outline-none
-				hover:cursor-pointer"
+				dark:text-white
+				max-[750px]:text-[14px]"
 			placeholder="From"
 			oninput={handleFromChange}
 		/>
@@ -74,9 +83,11 @@
 
 	<div
 		id="filter_minimal_input_container_power_to"
-		class="w-full pr-[10px] py-[8px] flex flex-col flex-nowrap"
+		class="flex w-full flex-col flex-nowrap py-[8px] pr-[10px]"
 	>
-		<label for="filter_minimal_input_power_to" class="block text-[14px] text-transparent">Power</label>
+		<label for="filter_minimal_input_power_to" class="block text-[14px] text-transparent"
+			>Power</label
+		>
 		<input
 			type="number"
 			name="power_to"
@@ -84,19 +95,18 @@
 			value={toValue || ''}
 			{disabled}
 			class="number-input
+				block
+				w-full border-0
+				border-b-[1px]
+				border-transparent bg-transparent p-0 text-[15px]
+				text-zinc-800
+				outline-none placeholder:text-zinc-400
+				hover:cursor-pointer focus:border-brand-blue_light
 				focus:ring-0
-				border-b-[1px] border-transparent
-				focus:border-brand-blue_light
-				block w-full border-0 p-0
-				bg-transparent
-				text-[15px] max-[750px]:text-[14px]
-				text-zinc-800 dark:text-white
-				placeholder:text-zinc-400
-				outline-none
-				hover:cursor-pointer"
+				dark:text-white
+				max-[750px]:text-[14px]"
 			placeholder="To"
 			oninput={handleToChange}
 		/>
 	</div>
 </div>
-
