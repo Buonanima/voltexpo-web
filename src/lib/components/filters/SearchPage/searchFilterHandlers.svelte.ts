@@ -1,6 +1,6 @@
 import type { Brand, Model } from '../types';
 import type { BodyType } from '../cards/bodyTypeCard.svelte.js';
-import { searchBrandState, searchModelState, searchFilterUtils } from './searchFilterState.svelte';
+import { searchFilterUtils } from './searchFilterState.svelte';
 import { brandCardSvelte } from '../cards/brandCard.svelte.js';
 import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
 import { bodyTypeCardSvelte } from '../cards/bodyTypeCard.svelte.js';
