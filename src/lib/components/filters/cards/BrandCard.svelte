@@ -1,27 +1,21 @@
 <!-- components/BrandCard.svelte -->
 <script lang="ts">
 	import type { Brand } from '../types';
-	// Import global state for backwards compatibility
-	import {
-		brandCardState,
-		loadBrands,
-		getFilteredBrands
-	} from './brandCard.svelte.js';
 
 	// Props with callback functions
 	const { 
 		isOpen = false,
-		brands = null,
-		loading = null,
-		error = null,
+		brands = [],
+		loading = false,
+		error = false,
 		onSelect,
 		onClose,
 		onRetry
 	} = $props<{
 		isOpen?: boolean;
-		brands?: Brand[] | null;
-		loading?: boolean | null;
-		error?: boolean | null;
+		brands?: Brand[];
+		loading?: boolean;
+		error?: boolean;
 		onSelect: (brand: Brand) => void;
 		onClose: () => void;
 		onRetry?: () => void;
@@ -30,19 +24,13 @@
 	// Local search state
 	let searchText = $state('');
 
-	// Backwards compatibility: use props if provided, otherwise fall back to global state
-	const activeBrands = $derived(brands !== null ? brands : brandCardState.brands);
-	const activeLoading = $derived(loading !== null ? loading : brandCardState.loading);
-	const activeError = $derived(error !== null ? error : brandCardState.error);
-	const activeSearchText = $derived(brands !== null ? searchText : brandCardState.searchText);
-
 	// Filtered brands based on search text
 	const filteredBrands = $derived(
-		activeSearchText
-			? activeBrands.filter((brand) =>
-					brand.brand_name.toLowerCase().includes(activeSearchText.toLowerCase())
+		searchText
+			? brands.filter((brand) =>
+					brand.brand_name.toLowerCase().includes(searchText.toLowerCase())
 				)
-			: activeBrands
+			: brands
 	);
 
 	function closeBrandCard(): void {
@@ -55,13 +43,7 @@
 
 	function handleSearchInput(event: Event): void {
 		const target = event.target as HTMLInputElement;
-		if (brands !== null) {
-			// New props-based mode: use local search state
-			searchText = target.value;
-		} else {
-			// Backwards compatibility mode: use global state
-			brandCardState.searchText = target.value;
-		}
+		searchText = target.value;
 	}
 
 	function handleBackdropClick(event: MouseEvent | TouchEvent): void {
@@ -72,17 +54,13 @@
 
 	function handleRetryClick(): void {
 		if (onRetry) {
-			// New props-based mode: use callback
 			onRetry();
-		} else {
-			// Backwards compatibility mode: use global loadBrands
-			loadBrands();
 		}
 	}
 
-	// Reset search when card closes (only for new props-based mode)
+	// Reset search when card closes
 	$effect(() => {
-		if (!isOpen && brands !== null) {
+		if (!isOpen) {
 			searchText = '';
 		}
 	});
@@ -126,7 +104,7 @@
 				<input
 					id="brand_card_input"
 					placeholder="Search..."
-					value={activeSearchText}
+					value={searchText}
 					oninput={handleSearchInput}
 					class="w-[calc(100%-30px)] mx-[15px] mb-[15px] px-[15px] h-[40px]
                            ring-0 focus:ring-0 rounded-[10px]
@@ -148,9 +126,9 @@
 					id="brand_card_list"
 					class="card_list mr-[10px] text-gray-600"
 				>
-					{#if activeLoading}
+					{#if loading}
 						<li class="p-4 text-center text-gray-600 dark:text-gray-300">Loading...</li>
-					{:else if activeError}
+					{:else if error}
 						<li class="p-4 text-center">
 							<div class="text-red-500 mb-2">Error loading brands</div>
 							<button
@@ -162,7 +140,7 @@
 								Retry
 							</button>
 						</li>
-					{:else if filteredBrands.length === 0 && activeBrands.length > 0}
+					{:else if filteredBrands.length === 0 && brands.length > 0}
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">No brands found</li>
 					{:else if filteredBrands.length === 0}
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">No brands available</li>

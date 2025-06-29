@@ -1,8 +1,17 @@
-# sv
+# VoltExpo
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A high-performance SvelteKit application for electric car listings with advanced filtering and search capabilities.
 
-## Creating a project
+## Architecture
+
+This project follows sophisticated architectural patterns optimized for performance and maintainability:
+
+- **📖 [Architecture Guide](ARCHITECTURE.md)** - Complete architectural principles and patterns
+- **🔧 [Filter System](src/lib/components/filters/filter_DOCS.md)** - Advanced filter implementation guide
+- **⚡ Server-First Rendering** - SSR optimization with intelligent client-side enhancements
+- **🏗️ Props-Down Architecture** - Predictable data flow with state isolation
+
+## Quick Start
 
 If you're seeing this, you've probably already done this step. Congrats!
 

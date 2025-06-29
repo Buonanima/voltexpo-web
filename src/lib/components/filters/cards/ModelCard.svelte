@@ -2,25 +2,22 @@
 <script lang="ts">
 	import type { Model } from '../types';
 
-	// Import the global state for backwards compatibility (FilterHome)
-	import { modelCardState, loadModels } from './modelCard.svelte';
-
 	// Props with callback functions
 	const { 
 		isOpen = false,
 		brandId = null,
-		models = null,
-		loading = null,
-		error = null,
+		models = [],
+		loading = false,
+		error = false,
 		onSelect,
 		onClose,
 		onRetry
 	} = $props<{
 		isOpen?: boolean;
 		brandId?: number | null;
-		models?: Model[] | null;
-		loading?: boolean | null;
-		error?: boolean | null;
+		models?: Model[];
+		loading?: boolean;
+		error?: boolean;
 		onSelect?: (model: Model) => void;
 		onClose?: () => void;
 		onRetry?: () => void;
@@ -29,19 +26,13 @@
 	// Local search state
 	let searchText = $state('');
 
-	// Backwards compatibility: use props if provided, otherwise fall back to global state
-	const activeModels = $derived(models !== null ? models : modelCardState.models);
-	const activeLoading = $derived(loading !== null ? loading : modelCardState.loading);
-	const activeError = $derived(error !== null ? error : modelCardState.error);
-	const activeSearchText = $derived(models !== null ? searchText : modelCardState.searchText);
-
 	// Filtered models based on search text
 	const filteredModels = $derived(
-		activeSearchText
-			? activeModels.filter((model) =>
-					model.model_name.toLowerCase().includes(activeSearchText.toLowerCase())
+		searchText
+			? models.filter((model) =>
+					model.model_name.toLowerCase().includes(searchText.toLowerCase())
 				)
-			: activeModels
+			: models
 	);
 
 	function closeModelCard(): void {
@@ -54,13 +45,7 @@
 
 	function handleSearchInput(event: Event): void {
 		const target = event.target as HTMLInputElement;
-		if (models !== null) {
-			// New props-based mode: use local search state
-			searchText = target.value;
-		} else {
-			// Backwards compatibility mode: use global state
-			modelCardState.searchText = target.value;
-		}
+		searchText = target.value;
 	}
 
 	function handleBackdropClick(event: MouseEvent | TouchEvent): void {
@@ -71,11 +56,7 @@
 
 	function handleRetry(): void {
 		if (onRetry) {
-			// New props-based mode: use callback
 			onRetry();
-		} else {
-			// Backwards compatibility mode: use global loadModels
-			loadModels(brandId);
 		}
 	}
 
@@ -83,9 +64,9 @@
 		selectModel(model);
 	}
 
-	// Reset search when card closes (only for new props-based mode)
+	// Reset search when card closes
 	$effect(() => {
-		if (!isOpen && models !== null) {
+		if (!isOpen) {
 			searchText = '';
 		}
 	});
@@ -128,7 +109,7 @@
 			<input
 				id="model_card_input"
 				placeholder="Search..."
-				value={activeSearchText}
+				value={searchText}
 				oninput={handleSearchInput}
 				disabled={!brandId}
 				class="w-[calc(100%-30px)] mx-[15px] mb-[15px] px-[15px] h-[40px]
@@ -155,11 +136,11 @@
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">
 							Please select a brand first
 						</li>
-					{:else if activeLoading}
+					{:else if loading}
 						<li class="p-4 text-center text-gray-600 dark:text-gray-300">
 							Loading models...
 						</li>
-					{:else if activeError}
+					{:else if error}
 						<li class="p-4 text-center">
 							<div class="text-red-500 mb-2">Error loading models</div>
 							<button
@@ -171,7 +152,7 @@
 								Retry
 							</button>
 						</li>
-					{:else if filteredModels.length === 0 && activeModels.length > 0}
+					{:else if filteredModels.length === 0 && models.length > 0}
 						<li class="p-4 text-center text-gray-500 dark:text-gray-400">
 							No Models found
 						</li>

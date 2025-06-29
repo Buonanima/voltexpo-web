@@ -12,8 +12,19 @@
 import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFilterButtons.svelte';
 	import { carsActions, likedCars } from './store/posts';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
+	import { getModelsById } from '$lib/api/model/getModelsById';
+	import { getBrandsList } from '$lib/api/brand/getBrandsList';
+	import { homeBrandState } from '$lib/components/filters/FilterHome/homeFilterState.svelte';
 
 	const { data }: { data: PageData } = $props();
+
+	// Local state for brands and models (eliminate global state bleeding)
+	let availableBrands = $state(data.availableBrands || []);
+	let availableModels = $state<any[]>([]);
+	let modelsLoading = $state(false);
+	let modelsError = $state(false);
+	let brandsLoading = $state(false);
+	let brandsError = $state(false);
 
 	const pageState = $state({
 		currentNavbarTab: 'home',
@@ -39,6 +50,76 @@ import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFi
 	const hasPopularCars = $derived(popularCarsWithLikeState.length > 0);
 	const hasRecentCars = $derived(recentCarsWithLikeState.length > 0);
 	const hasAllCars = $derived(allCarsWithLikeState.length > 0);
+
+	// Handle client-side models loading when brand changes
+	async function loadModelsForBrand(brandId: number | null): Promise<void> {
+		if (!brandId) {
+			availableModels = [];
+			return;
+		}
+
+		modelsLoading = true;
+		modelsError = false;
+
+		try {
+			const { data: models, error } = await getModelsById(brandId);
+			if (models && !error) {
+				availableModels = models;
+			} else {
+				modelsError = true;
+				availableModels = [];
+			}
+		} catch (error) {
+			console.error('Error loading models:', error);
+			modelsError = true;
+			availableModels = [];
+		} finally {
+			modelsLoading = false;
+		}
+	}
+
+	// Handle brands loading (for fallback cases where SSR failed)
+	async function loadBrands(): Promise<void> {
+		brandsLoading = true;
+		brandsError = false;
+
+		try {
+			const { data: brands, error } = await getBrandsList();
+			if (brands && !error) {
+				availableBrands = brands;
+			} else {
+				brandsError = true;
+				availableBrands = [];
+			}
+		} catch (error) {
+			console.error('Error loading brands:', error);
+			brandsError = true;
+			availableBrands = [];
+		} finally {
+			brandsLoading = false;
+		}
+	}
+
+	// Handle retry for models loading
+	function handleModelsRetry(): void {
+		// Get the currently selected brand from home filter state
+		const brandId = homeBrandState.selectedBrand?.id;
+		if (brandId) {
+			loadModelsForBrand(brandId);
+		}
+	}
+
+	// Handle retry for brands loading
+	function handleBrandsRetry(): void {
+		loadBrands();
+	}
+
+	// Load brands if they weren't pre-loaded from server (fallback)
+	$effect(() => {
+		if (availableBrands.length === 0 && !brandsLoading && !brandsError) {
+			loadBrands();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -58,7 +139,17 @@ import HomepageFilterButtons from '$lib/components/filters/FilterHome/HomepageFi
 </header>
 
 <div class="filter-container">
-	<FilterHome />
+	<FilterHome 
+		availableBrands={availableBrands}
+		availableModels={availableModels}
+		modelsLoading={modelsLoading}
+		modelsError={modelsError}
+		brandsLoading={brandsLoading}
+		brandsError={brandsError}
+		onLoadModels={loadModelsForBrand}
+		onBrandsRetry={handleBrandsRetry}
+		onModelsRetry={handleModelsRetry}
+	/>
 	<HomepageFilterButtons />
 </div>
 

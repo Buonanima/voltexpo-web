@@ -4,56 +4,88 @@
 	import BrandCard from '../cards/BrandCard.svelte';
 	import ModelCard from '../cards/ModelCard.svelte';
 	import { homeBrandState, homeModelState, homeFilterUtils } from './homeFilterState.svelte';
-	import { brandCardState } from '../cards/brandCard.svelte.js';
-	import { modelCardState, loadModels, resetModelCard } from '../cards/modelCard.svelte';
-	import { brandInputSvelte } from './inputs/brandInput.svelte.js';
-	import { modelInputSvelte } from './inputs/modelInput.svelte.js';
 	import type { Brand, Model } from '../types';
+
+	// Props for data and handlers
+	const { 
+		availableBrands = [],
+		availableModels = [],
+		modelsLoading = false,
+		modelsError = false,
+		brandsLoading = false,
+		brandsError = false,
+		onLoadModels,
+		onBrandsRetry,
+		onModelsRetry
+	} = $props<{
+		availableBrands?: Brand[];
+		availableModels?: Model[];
+		modelsLoading?: boolean;
+		modelsError?: boolean;
+		brandsLoading?: boolean;
+		brandsError?: boolean;
+		onLoadModels?: (brandId: number | null) => Promise<void>;
+		onBrandsRetry?: () => void;
+		onModelsRetry?: () => void;
+	}>();
+
+	// Local state for card open/close
+	let brandCardOpen = $state(false);
+	let modelCardOpen = $state(false);
 
 	// Brand handlers
 	function handleBrandOpen() {
-		brandCardState.isOpen = true;
+		brandCardOpen = true;
 	}
 
 	async function handleBrandSelect(brand: Brand) {
+		// Update local filter state
 		homeFilterUtils.setBrand(brand);
-		brandInputSvelte.selectedBrand = brand;
-		brandCardState.isOpen = false;
-		
-		// Reset model state
-		resetModelCard();
-		modelInputSvelte.selectedModel = null;
+		brandCardOpen = false;
 		
 		// Load models for the selected brand
-		await loadModels(brand.id);
+		if (onLoadModels) {
+			await onLoadModels(brand.id);
+		}
 	}
 
 	function handleBrandClear() {
+		// Reset brand and model state
 		homeFilterUtils.resetBrand();
-		brandInputSvelte.selectedBrand = null;
-		resetModelCard();
-		modelInputSvelte.selectedModel = null;
+		
+		// Clear models when brand is cleared
+		if (onLoadModels) {
+			onLoadModels(null);
+		}
 	}
 
 	function handleBrandClose() {
-		brandCardState.isOpen = false;
-		brandCardState.searchText = '';
+		brandCardOpen = false;
+	}
+
+	// Model handlers
+	function handleModelOpen() {
+		modelCardOpen = true;
 	}
 
 	function handleModelSelect(model: Model) {
+		// Update local filter state
 		homeFilterUtils.setModel(model);
-		modelInputSvelte.selectedModel = model;
-		modelCardState.isOpen = false;
+		modelCardOpen = false;
 	}
 
 	function handleModelClear() {
 		homeFilterUtils.resetModel();
-		modelInputSvelte.selectedModel = null;
 	}
 
 	function handleModelClose() {
-		modelCardState.isOpen = false;
-		modelCardState.searchText = '';
+		modelCardOpen = false;
+	}
+
+	function handleModelsRetry() {
+		if (onModelsRetry) {
+			onModelsRetry();
+		}
 	}
 
 </script>
@@ -75,6 +107,7 @@
 			value={homeModelState.selectedModel?.model_name || ''}
 			disabled={homeModelState.disabled}
 			variant="home"
+			onClick={handleModelOpen}
 			onClear={handleModelClear}
 		/>
 	</div>
@@ -82,14 +115,22 @@
 
 <!-- Modal Cards -->
 <BrandCard
-	isOpen={brandCardState.isOpen}
+	isOpen={brandCardOpen}
+	brands={availableBrands}
+	loading={brandsLoading}
+	error={brandsError}
 	onSelect={handleBrandSelect}
 	onClose={handleBrandClose}
+	onRetry={onBrandsRetry}
 />
 
 <ModelCard
-	isOpen={modelCardState.isOpen}
+	isOpen={modelCardOpen}
 	brandId={homeBrandState.selectedBrand?.id}
+	models={availableModels}
+	loading={modelsLoading}
+	error={modelsError}
 	onSelect={handleModelSelect}
 	onClose={handleModelClose}
+	onRetry={handleModelsRetry}
 />

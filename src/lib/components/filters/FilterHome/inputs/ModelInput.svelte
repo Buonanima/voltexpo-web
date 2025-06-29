@@ -3,7 +3,6 @@
 	import { brandInputSvelte } from './brandInput.svelte.js';
 	import { searchModelInputSvelte } from '../../SearchPage/inputs/modelInput.svelte';
 	import { searchBrandInputSvelte } from '../../SearchPage/inputs/brandInput.svelte';
-	import { modelCardState } from '../../cards/modelCard.svelte.js';
 	import CrossIcon from '$lib/components/shared/icons/CrossIcon.svelte';
 
 	// Props
@@ -41,17 +40,8 @@
 		if (disabled) return;
 		
 		if (onClick) {
-			// Search page: use the provided onClick handler
+			// Both home and search page now use the provided onClick handler
 			onClick();
-		} else {
-			// Home page: check if brand is selected before opening model card
-			const selectedBrand = variant === 'search' 
-				? searchBrandInputSvelte.selectedBrand 
-				: brandInputSvelte.selectedBrand;
-			
-			if (selectedBrand?.id) {
-				modelCardState.isOpen = true;
-			}
 		}
 	}
 
