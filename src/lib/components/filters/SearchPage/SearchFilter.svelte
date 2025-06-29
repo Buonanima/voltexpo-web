@@ -105,7 +105,7 @@
 	// Get current filters from state module
 	const currentFilters = $derived(searchFilterState.currentFilters);
 
-	// Notify parent when filters change
+	// Notify parent when filters change - this will trigger immediately on any filter update
 	$effect(() => {
 		if (onFiltersChange) {
 			onFiltersChange(currentFilters);
@@ -160,23 +160,23 @@
 
 		<YearInput
 			onClear={() => yearInputSvelte.reset()}
-			onChange={(from, to) => console.log('Year changed:', { from, to })}
+			onChange={(from, to) => {/* Filter changes are auto-detected via $effect */}}
 		/>
 
 		<PriceInput
 			onClear={() => priceInputSvelte.reset()}
-			onChange={(from, to) => console.log('Price changed:', { from, to })}
+			onChange={(from, to) => {/* Filter changes are auto-detected via $effect */}}
 		/>
 
 		<RangeInput
 			onClear={() => rangeInputSvelte.reset()}
-			onChange={(from, to) => console.log('Range changed:', { from, to })}
+			onChange={(from, to) => {/* Filter changes are auto-detected via $effect */}}
 		/>
 
 		<BodyTypeInput
 			onOpen={() => bodyTypeCardSvelte.isOpen = true}
 			onClear={() => bodyTypeInputSvelte.reset()}
-			onChange={(value) => console.log('Body type changed:', value)}
+			onChange={(value) => {/* Filter changes are auto-detected via $effect */}}
 		/>
 	</div>
 
@@ -186,12 +186,12 @@
 			<div class="w-full grid grid-cols-2 rounded-[20px]">
 				<KmInput
 					onClear={() => kmInputSvelte.reset()}
-					onChange={(from, to) => console.log('Km changed:', { from, to })}
+					onChange={(from, to) => {/* Filter changes are auto-detected via $effect */}}
 				/>
 
 				<PowerInput
 					onClear={() => powerInputSvelte.reset()}
-					onChange={(from, to) => console.log('Power changed:', { from, to })}
+					onChange={(from, to) => {/* Filter changes are auto-detected via $effect */}}
 				/>
 			</div>
 		</div>

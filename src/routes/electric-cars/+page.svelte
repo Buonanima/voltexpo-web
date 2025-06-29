@@ -111,6 +111,9 @@
 	// Current filter state
 	let currentFilters: FilterParams = $state({});
 
+	// Debounce utility for search
+	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
 	// Filter handlers
 	async function handleSearch() {
 		if (!searchFilterComponent) return;
@@ -133,13 +136,6 @@
 			// Update page state - ensure results is always an array
 			pageState.searchResults = results || [];
 			
-			// Generate URL search params and navigate
-			const searchParams = searchFilterComponent.generateUrlSearchParams();
-			const newUrl = `/electric-cars${ searchParams.toString() ? '?' + searchParams.toString() : '' }`;
-			
-			// Update URL without full page reload
-			await goto(newUrl, { replaceState: false, noScroll: true });
-			
 		} catch (error) {
 			console.error('Search failed:', error);
 			// Set empty results and show user-friendly message
@@ -150,11 +146,44 @@
 		}
 	}
 
-	// Do not remove this, we will need auto-search in the future
-	// Handle filter changes (optional - for real-time updates)
+	// Debounced search function for automatic filtering
+	async function debouncedSearch() {
+		if (searchTimeout) {
+			clearTimeout(searchTimeout);
+		}
+		
+		searchTimeout = setTimeout(async () => {
+			await handleSearch();
+		}, 300); // 300ms debounce
+	}
+
+	// Update URL immediately when filters change (without debounce)
+	function updateUrlFromFilters() {
+		if (!searchFilterComponent || !browser) return;
+		
+		try {
+			const searchParams = searchFilterComponent.generateUrlSearchParams();
+			const newUrl = `/electric-cars${ searchParams.toString() ? '?' + searchParams.toString() : '' }`;
+			
+			// Update URL immediately without page reload
+			goto(newUrl, { replaceState: true, noScroll: true });
+		} catch (error) {
+			console.error('Failed to update URL:', error);
+		}
+	}
+
+	// Handle filter changes with immediate URL update and debounced search
 	function handleFiltersChange(filters: FilterParams) {
 		currentFilters = filters;
-		// Could implement auto-search here if desired
+		
+		// Only proceed with automatic updates if we're in the browser and have the component
+		if (!browser || !searchFilterComponent) return;
+		
+		// Update URL immediately for instant feedback
+		updateUrlFromFilters();
+		
+		// Trigger debounced search for results
+		debouncedSearch();
 	}
 
 	function handleToggleMoreFilters() {
@@ -251,15 +280,18 @@
 		}
 	});
 
-	// Build H1 title - just brand and model names without "Electric Cars"
+	// Build H1 title dynamically from current filter state (not just server data)
 	const h1Title = $derived.by(() => {
-		const { brand, model } = data.filters;
-		if (brand && model) {
-			return `${brand} ${model}`;
-		} else if (brand) {
-			return brand;
-		} else if (model) {
-			return model;
+		// Use current filter state for immediate updates, fallback to server data
+		const currentBrand = currentFilters.brand?.value || data.filters.brand;
+		const currentModel = currentFilters.model?.value || data.filters.model;
+		
+		if (currentBrand && currentModel) {
+			return `${currentBrand} ${currentModel}`;
+		} else if (currentBrand) {
+			return `${currentBrand} Electric Cars`;
+		} else if (currentModel) {
+			return `${currentModel} Electric Cars`;
 		} else {
 			return 'Electric Cars';
 		}
@@ -351,11 +383,13 @@
 		<section class="section">
 			<h1 class="page-title">{h1Title}</h1>
 			
-			<div class="filter-summary">
-				<p class="text-[17px] text-zinc-600 dark:text-zinc-400">
-					{searchResultsWithLikeState.length} {searchResultsWithLikeState.length === 1 ? 'result' : 'results'}
-				</p>
-			</div>
+			{#if !pageState.isLoading}
+				<div class="filter-summary">
+					<p class="text-[17px] text-zinc-600 dark:text-zinc-400">
+						{searchResultsWithLikeState.length} {searchResultsWithLikeState.length === 1 ? 'result' : 'results'}
+					</p>
+				</div>
+			{/if}
 
 			{#if pageState.error}
 				<div class="error-message">
@@ -378,7 +412,14 @@
 				</div>
 			{/if}
 
-			{#if hasResults}
+			<!-- Loading spinner for loading state -->
+			{#if pageState.isLoading}
+				<div class="loading-state">
+					<div class="flex items-center justify-center" style="padding-top: 50px; min-height: 200px;">
+						<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+					</div>
+				</div>
+			{:else if hasResults}
 				<div class="cars-grid">
 					{#each searchResultsWithLikeState as car (car.id)}
 						<PostCard {car} />
